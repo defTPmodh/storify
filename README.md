@@ -1,4 +1,4 @@
-This project was generated from [create.xyz](https://create.xyz/).
+This project was Made for A School Project
 
 It is a [Next.js](https://nextjs.org/) project built on React and TailwindCSS.
 
