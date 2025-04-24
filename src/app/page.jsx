@@ -10,6 +10,7 @@ function MainComponent() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showDonateModal, setShowDonateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -186,6 +187,96 @@ function MainComponent() {
     smartHome: false,
     darkMode: false,
   });
+  const [selectedDonationItem, setSelectedDonationItem] = useState(null);
+  const [foodBanks] = useState([
+    {
+      id: 1,
+      name: "Emirates Red Crescent",
+      address: "Al Bateen, Abu Dhabi",
+      phone: "02-621-9999",
+      hours: "Sun-Thu 8AM-4PM",
+      acceptedItems: ["Non-perishables", "Canned goods", "Rice", "Flour", "Oil", "Dates"],
+      distance: "3.2 km",
+      website: "https://www.rcuae.ae/en"
+    },
+    {
+      id: 2,
+      name: "Dar Zayed for Family Care",
+      address: "Al Nahyan, Abu Dhabi",
+      phone: "02-666-6666",
+      hours: "Sun-Thu 9AM-5PM",
+      acceptedItems: ["All food items", "Personal care items", "Clothing"],
+      distance: "4.5 km",
+      website: "https://www.zayed.org.ae"
+    },
+    {
+      id: 3,
+      name: "Abu Dhabi Food Bank",
+      address: "Al Ain, Abu Dhabi",
+      phone: "02-666-7777",
+      hours: "24/7",
+      acceptedItems: ["Fresh food", "Packaged food", "Beverages"],
+      distance: "7.8 km",
+      website: "https://www.ead.gov.ae/en/join-us/food-bank"
+    },
+    {
+      id: 4,
+      name: "Khalifa Bin Zayed Al Nahyan Foundation",
+      address: "Al Bateen, Abu Dhabi",
+      phone: "02-666-8888",
+      hours: "Sun-Thu 8AM-4PM",
+      acceptedItems: ["All food items", "Educational materials", "Medical supplies"],
+      distance: "5.1 km",
+      website: "https://www.kbzf.org"
+    }
+  ]);
+  const [communityEvents] = useState([
+    {
+      id: 1,
+      title: "Ramadan Food Drive 2025",
+      date: "2025-03-10",
+      location: "Abu Dhabi National Exhibition Centre",
+      organizer: "Emirates Red Crescent",
+      description: "Annual Ramadan food drive to support families in need across the UAE",
+      type: "Food Drive"
+    },
+    {
+      id: 2,
+      title: "Community Iftar Sharing",
+      date: "2025-03-15",
+      location: "Sheikh Zayed Grand Mosque",
+      organizer: "Abu Dhabi Food Bank",
+      description: "Community iftar sharing program during Ramadan",
+      type: "Community Event"
+    },
+    {
+      id: 3,
+      title: "Neighborhood Food Sharing Day",
+      date: "2024-12-20",
+      location: "Khalifa City",
+      organizer: "Abu Dhabi Municipality",
+      description: "Share excess food with neighbors and reduce food waste",
+      type: "Community Event"
+    },
+    {
+      id: 4,
+      title: "Eid Al Fitr Food Distribution",
+      date: "2025-04-10",
+      location: "Multiple locations across Abu Dhabi",
+      organizer: "Dar Zayed for Family Care",
+      description: "Eid food distribution program for families in need",
+      type: "Food Drive"
+    }
+  ]);
+  const [donationHistory, setDonationHistory] = useState([
+    {
+      id: 1,
+      item: "Canned Beans",
+      quantity: 5,
+      recipient: "Community Food Bank",
+      date: "2024-03-01"
+    }
+  ]);
   const getStorageRecommendation = (category, temperature, humidity) => {
     const recommendations = {
       Dairy: {
@@ -545,6 +636,32 @@ function MainComponent() {
         timestamp: new Date().toISOString(),
       },
     ]);
+  };
+  const handleDonateItem = (item) => {
+    setSelectedDonationItem(item);
+    setShowDonateModal(true);
+  };
+  const handleConfirmDonation = (recipient) => {
+    if (selectedDonationItem) {
+      setDonationHistory(prev => [...prev, {
+        id: prev.length + 1,
+        item: selectedDonationItem.name,
+        quantity: selectedDonationItem.quantity,
+        recipient: recipient,
+        date: new Date().toISOString().split('T')[0]
+      }]);
+      
+      setProducts(products.filter(p => p.id !== selectedDonationItem.id));
+      setShowDonateModal(false);
+      setSelectedDonationItem(null);
+      
+      setActivityLog(prev => [...prev, {
+        id: prev.length + 1,
+        user: loginForm.email,
+        action: `donated ${selectedDonationItem.name} to ${recipient}`,
+        timestamp: new Date().toISOString()
+      }]);
+    }
   };
 
   return (
@@ -1438,6 +1555,102 @@ function MainComponent() {
                 )}
               </div>
             )}
+
+            {activeTab === "donate" && (
+              <div className="p-4 space-y-6">
+                <div className={`${settings.darkMode ? "bg-gray-700" : "bg-white"} rounded-xl p-6 shadow-lg`}>
+                  <h2 className={`text-xl font-bold mb-4 ${settings.darkMode ? "text-white" : "text-gray-800"}`}>
+                    <i className="fas fa-hands-helping text-[#6BBF59] mr-2"></i>
+                    Donate & Share Hub - Abu Dhabi
+                  </h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div className={`${settings.darkMode ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-lg`}>
+                      <h3 className="font-semibold mb-2">Your Impact</h3>
+                      <div className="text-3xl font-bold text-[#6BBF59]">{donationHistory.length}</div>
+                      <p className="text-sm text-gray-500">Items Donated</p>
+                    </div>
+                    <div className={`${settings.darkMode ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-lg`}>
+                      <h3 className="font-semibold mb-2">Active Food Drives</h3>
+                      <div className="text-3xl font-bold text-[#6BBF59]">{communityEvents.length}</div>
+                      <p className="text-sm text-gray-500">Upcoming Events</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <h3 className="font-semibold mb-3">Local Food Banks & Charities</h3>
+                    <div className="space-y-3">
+                      {foodBanks.map(bank => (
+                        <div key={bank.id} className={`${settings.darkMode ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-lg`}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium">{bank.name}</h4>
+                              <p className="text-sm text-gray-500">{bank.address}</p>
+                              <p className="text-sm text-gray-500">{bank.hours}</p>
+                              <a href={bank.website} target="_blank" rel="noopener noreferrer" className="text-sm text-[#6BBF59] hover:underline">
+                                Visit Website
+                              </a>
+                            </div>
+                            <span className="text-sm text-[#6BBF59]">{bank.distance}</span>
+                          </div>
+                          <div className="mt-2">
+                            <p className="text-sm font-medium">Accepted Items:</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {bank.acceptedItems.map((item, index) => (
+                                <span key={index} className="text-xs bg-[#6BBF59]/10 text-[#6BBF59] px-2 py-1 rounded">
+                                  {item}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <h3 className="font-semibold mb-3">Community Events & Food Drives</h3>
+                    <div className="space-y-3">
+                      {communityEvents.map(event => (
+                        <div key={event.id} className={`${settings.darkMode ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-lg`}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium">{event.title}</h4>
+                              <p className="text-sm text-gray-500">{event.date}</p>
+                              <p className="text-sm text-gray-500">{event.location}</p>
+                              <p className="text-sm mt-2">{event.description}</p>
+                            </div>
+                            <span className="text-xs bg-[#6BBF59]/10 text-[#6BBF59] px-2 py-1 rounded">
+                              {event.type}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-3">Your Donation History</h3>
+                    <div className="space-y-3">
+                      {donationHistory.map(donation => (
+                        <div key={donation.id} className={`${settings.darkMode ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-lg`}>
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h4 className="font-medium">{donation.item}</h4>
+                              <p className="text-sm text-gray-500">Quantity: {donation.quantity}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium">{donation.recipient}</p>
+                              <p className="text-sm text-gray-500">{donation.date}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <nav
@@ -1491,9 +1704,9 @@ function MainComponent() {
               <span className="text-xs">Items</span>
             </button>
             <button
-              onClick={() => setActiveTab("shared")}
+              onClick={() => setActiveTab("donate")}
               className={`flex-1 p-4 flex flex-col items-center ${
-                activeTab === "shared"
+                activeTab === "donate"
                   ? settings.darkMode
                     ? "text-[#F4B400]"
                     : "text-[#6BBF59]"
@@ -1502,8 +1715,8 @@ function MainComponent() {
                   : "text-gray-500"
               } hover:scale-110 transition-all duration-300`}
             >
-              <i className="fas fa-users text-xl mb-1"></i>
-              <span className="text-xs">Shared</span>
+              <i className="fas fa-hands-helping text-xl mb-1"></i>
+              <span className="text-xs">Donate</span>
             </button>
             <button
               onClick={() => setActiveTab("settings")}
@@ -1909,6 +2122,47 @@ function MainComponent() {
                 </div>
                 <button
                   onClick={() => setShowInviteModal(false)}
+                  className="absolute top-2 right-2 text-gray-500"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showDonateModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+              <div className={`${settings.darkMode ? "bg-gray-800" : "bg-white"} rounded-lg p-6 w-full max-w-md`}>
+                <h2 className={`text-xl font-bold mb-4 ${settings.darkMode ? "text-white" : "text-gray-800"}`}>
+                  Donate Item
+                </h2>
+                <div className="space-y-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h3 className="font-medium">{selectedDonationItem?.name}</h3>
+                    <p className="text-sm text-gray-500">Quantity: {selectedDonationItem?.quantity}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Select Recipient</label>
+                    <select className="w-full p-2 border rounded">
+                      {foodBanks.map(bank => (
+                        <option key={bank.id} value={bank.name}>{bank.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={() => handleConfirmDonation(foodBanks[0].name)}
+                    className="w-full bg-[#6BBF59] text-white py-2 rounded hover:bg-[#5AA548]"
+                  >
+                    Confirm Donation
+                  </button>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowDonateModal(false);
+                    setSelectedDonationItem(null);
+                  }}
                   className="absolute top-2 right-2 text-gray-500"
                 >
                   <i className="fas fa-times"></i>
