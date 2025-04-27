@@ -545,20 +545,34 @@ function MainComponent() {
     } else if (plan === "premium") {
       setSubscriptionTier("premium");
       setIsTrialActive(false);
+      setActivityLog((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          user: loginForm.email,
+          action: "selected premium monthly plan",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+    } else if (plan === "premium-yearly") {
+      setSubscriptionTier("premium");
+      setIsTrialActive(false);
+      const yearlyEnd = new Date();
+      yearlyEnd.setFullYear(yearlyEnd.getFullYear() + 1);
+      setTrialEndDate(yearlyEnd);
+      setActivityLog((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          user: loginForm.email,
+          action: "selected premium yearly plan",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
     }
     
     setIsLoggedIn(true);
     setShowPlansModal(false);
-    
-    setActivityLog((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        user: loginForm.email,
-        action: `selected ${plan} plan${plan === "free" ? " with premium trial" : ""}`,
-        timestamp: new Date().toISOString(),
-      },
-    ]);
   };
   const handleRemoveProduct = (id) => {
     const product = products.find((p) => p.id === id);
@@ -930,15 +944,18 @@ function MainComponent() {
                           settings.darkMode ? "text-gray-400" : "text-gray-500"
                         }`}
                       >
-                        {isTrialActive 
-                          ? "Premium Trial (30 days)"
-                          : subscriptionTier === "premium"
+                        {subscriptionTier === "premium"
                           ? "Premium Plan"
                           : "Free Plan"}
                       </p>
                       {isTrialActive && (
                         <p className="text-sm text-green-600 mt-1">
-                          {Math.ceil((trialEndDate - new Date()) / (1000 * 60 * 60 * 24))} days remaining
+                          {Math.ceil((trialEndDate - new Date()) / (1000 * 60 * 60 * 24))} days remaining in trial
+                        </p>
+                      )}
+                      {subscriptionTier === "premium" && !isTrialActive && trialEndDate && (
+                        <p className="text-sm text-blue-600 mt-1">
+                          Subscription ends on {trialEndDate.toLocaleDateString()}
                         </p>
                       )}
                     </div>
@@ -1933,7 +1950,11 @@ function MainComponent() {
                   </div>
                   <div className="w-full p-4 bg-[#4A90E2] text-white rounded-lg">
                     <h3 className="font-bold">Premium Plan</h3>
-                    <p className="text-sm">AED 4.99/month</p>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <p className="text-sm">AED 6.99/month</p>
+                      <span className="text-xs bg-white/20 px-2 py-1 rounded">or</span>
+                      <p className="text-sm">AED 79.99/year</p>
+                    </div>
                     <ul className="mt-2 space-y-1 text-sm">
                       <li>• Unlimited items</li>
                       <li>• Smart home integration</li>
@@ -1941,12 +1962,20 @@ function MainComponent() {
                       <li>• Family sharing</li>
                       <li>• Premium support</li>
                     </ul>
-                    <button
-                      onClick={() => handleSelectPlan("premium")}
-                      className="mt-4 w-full py-2 bg-white text-[#4A90E2] rounded hover:bg-gray-50"
-                    >
-                      Get Premium
-                    </button>
+                    <div className="mt-4 space-y-2">
+                      <button
+                        onClick={() => handleSelectPlan("premium")}
+                        className="w-full py-2 bg-white text-[#4A90E2] rounded hover:bg-gray-50"
+                      >
+                        Get Premium Monthly
+                      </button>
+                      <button
+                        onClick={() => handleSelectPlan("premium-yearly")}
+                        className="w-full py-2 bg-white/20 text-white rounded hover:bg-white/30"
+                      >
+                        Get Premium Yearly (Save 5%)
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <button
