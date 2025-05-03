@@ -22,8 +22,23 @@ export async function GET() {
 // Handle POST request
 export async function POST(request) {
   try {
+    // Check if API key is configured
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.error('OpenRouter API key is not configured');
+      return NextResponse.json(
+        { 
+          error: 'API key not configured',
+          details: 'Please check your environment variables',
+          type: 'config_error'
+        },
+        { status: 500 }
+      );
+    }
+
     // Log the incoming request
     console.log('Received recipe generation request');
+    console.log('Using API Key:', process.env.OPENROUTER_API_KEY ? 'Present' : 'Missing');
+    console.log('Using Referer:', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
     const body = await request.json();
     console.log('Request body:', body);
@@ -78,6 +93,13 @@ export async function POST(request) {
       return NextResponse.json({ recipe });
     } catch (openaiError) {
       console.error('OpenRouter.ai API error:', openaiError);
+      console.error('Error details:', {
+        message: openaiError.message,
+        status: openaiError.status,
+        type: openaiError.type,
+        code: openaiError.code
+      });
+      
       return NextResponse.json(
         { 
           error: 'Failed to generate recipe with OpenRouter.ai',
