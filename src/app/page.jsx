@@ -2847,6 +2847,140 @@ function MainComponent() {
               </div>
             </div>
           )}
+
+          {/* Add Product Modal */}
+          {showAddModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+              <div className={`${settings.darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"} rounded-xl p-8 w-full max-w-md shadow-2xl relative`}>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className={`absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 transition-colors ${settings.darkMode ? "text-gray-400 hover:text-white" : "text-gray-500"}`}
+                  aria-label="Close"
+                >
+                  <i className="fas fa-times text-xl"></i>
+                </button>
+                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                  <i className="fas fa-plus text-[#4A90E2]"></i>
+                  Add New Item
+                </h2>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAddProduct();
+                }}>
+                  <div className="space-y-4">
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${settings.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Item Name
+                      </label>
+                      <input
+                        type="text"
+                        value={newProduct.name}
+                        onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                        className={`w-full p-3 rounded-lg border transition-colors ${
+                          settings.darkMode 
+                            ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#4A90E2]" 
+                            : "bg-white border-gray-300 focus:border-[#4A90E2]"
+                        }`}
+                        placeholder="Enter item name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${settings.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Category
+                      </label>
+                      <select
+                        value={newProduct.category}
+                        onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                        className={`w-full p-3 rounded-lg border transition-colors ${
+                          settings.darkMode 
+                            ? "bg-gray-700 border-gray-600 text-white focus:border-[#4A90E2]" 
+                            : "bg-white border-gray-300 focus:border-[#4A90E2]"
+                        }`}
+                        required
+                      >
+                        <option value="">Select a category</option>
+                        {categories.filter((cat) => cat !== "All").map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${settings.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Quantity
+                      </label>
+                      <input
+                        type="number"
+                        value={newProduct.quantity}
+                        onChange={(e) => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) })}
+                        className={`w-full p-3 rounded-lg border transition-colors ${
+                          settings.darkMode 
+                            ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#4A90E2]" 
+                            : "bg-white border-gray-300 focus:border-[#4A90E2]"
+                        }`}
+                        placeholder="Enter quantity"
+                        min="1"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${settings.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Expiry Date
+                      </label>
+                      <input
+                        type="date"
+                        value={newProduct.expiryDate}
+                        onChange={(e) => setNewProduct({ ...newProduct, expiryDate: e.target.value })}
+                        className={`w-full p-3 rounded-lg border transition-colors ${
+                          settings.darkMode 
+                            ? "bg-gray-700 border-gray-600 text-white focus:border-[#4A90E2]" 
+                            : "bg-white border-gray-300 focus:border-[#4A90E2]"
+                        }`}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${settings.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        Storage Location
+                      </label>
+                      <select
+                        value={newProduct.location}
+                        onChange={(e) => setNewProduct({ ...newProduct, location: e.target.value })}
+                        className={`w-full p-3 rounded-lg border transition-colors ${
+                          settings.darkMode 
+                            ? "bg-gray-700 border-gray-600 text-white focus:border-[#4A90E2]" 
+                            : "bg-white border-gray-300 focus:border-[#4A90E2]"
+                        }`}
+                        required
+                      >
+                        <option value="">Select storage location</option>
+                        <option value="pantry">Pantry</option>
+                        <option value="refrigerator">Refrigerator</option>
+                        <option value="freezer">Freezer</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-3 mt-6">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddModal(false)}
+                      className={`px-4 py-2 rounded-lg font-medium border ${settings.darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-lg font-medium bg-[#4A90E2] text-white hover:bg-[#357ABD]"
+                    >
+                      Add Item
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <ConfettiBurst trigger={showConfetti} />
