@@ -1,7 +1,24 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
 import { useUpload } from "../utilities/runtime-helpers";
+
+// Confetti logic
+function ConfettiBurst({ trigger }) {
+  const ref = useRef();
+  React.useEffect(() => {
+    if (trigger) {
+      import('canvas-confetti').then((confetti) => {
+        confetti.default({
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.7 },
+        });
+      });
+    }
+  }, [trigger]);
+  return null;
+}
 
 function MainComponent() {
   const [activeTab, setActiveTab] = useState("home");
@@ -11,6 +28,8 @@ function MainComponent() {
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showDonateModal, setShowDonateModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -43,7 +62,7 @@ function MainComponent() {
     {
       id: 1,
       name: "Milk",
-      expiry: "2025-05-8",
+      expiry: "2025-05-10",
       quantity: 1,
       category: "Dairy",
       status: "near",
@@ -53,7 +72,7 @@ function MainComponent() {
     {
       id: 2,
       name: "Bread",
-      expiry: "2025-05-10",
+      expiry: "2025-05-12",
       quantity: 2,
       category: "Pantry",
       status: "near",
@@ -63,13 +82,133 @@ function MainComponent() {
     {
       id: 3,
       name: "Apples",
-      expiry: "2025-05-12",
+      expiry: "2025-05-15",
       quantity: 6,
       category: "Fruits",
       status: "near",
       temperature: "8",
       humidity: "60",
     },
+    {
+      id: 4,
+      name: "Chicken Breast",
+      expiry: "2025-05-8",
+      quantity: 2,
+      category: "Meat",
+      status: "near",
+      temperature: "2",
+      humidity: "35",
+    },
+    {
+      id: 5,
+      name: "Yogurt",
+      expiry: "2025-05-9",
+      quantity: 4,
+      category: "Dairy",
+      status: "near",
+      temperature: "4",
+      humidity: "40",
+    },
+    {
+      id: 6,
+      name: "Spinach",
+      expiry: "2025-05-8",
+      quantity: 1,
+      category: "Vegetables",
+      status: "near",
+      temperature: "10",
+      humidity: "65",
+    },
+    {
+      id: 7,
+      name: "Strawberries",
+      expiry: "2025-05-7",
+      quantity: 1,
+      category: "Fruits",
+      status: "near",
+      temperature: "8",
+      humidity: "60",
+    },
+    {
+      id: 8,
+      name: "Ground Beef",
+      expiry: "2025-05-8",
+      quantity: 1,
+      category: "Meat",
+      status: "near",
+      temperature: "2",
+      humidity: "35",
+    },
+    {
+      id: 9,
+      name: "Cheese",
+      expiry: "2025-05-20",
+      quantity: 2,
+      category: "Dairy",
+      status: "near",
+      temperature: "4",
+      humidity: "40",
+    },
+    {
+      id: 10,
+      name: "Tomatoes",
+      expiry: "2025-05-9",
+      quantity: 4,
+      category: "Vegetables",
+      status: "near",
+      temperature: "10",
+      humidity: "65",
+    },
+    {
+      id: 11,
+      name: "Bananas",
+      expiry: "2025-05-7",
+      quantity: 6,
+      category: "Fruits",
+      status: "near",
+      temperature: "8",
+      humidity: "60",
+    },
+    {
+      id: 12,
+      name: "Salmon Fillet",
+      expiry: "2025-05-8",
+      quantity: 2,
+      category: "Meat",
+      status: "near",
+      temperature: "2",
+      humidity: "35",
+    },
+    {
+      id: 13,
+      name: "Butter",
+      expiry: "2025-05-25",
+      quantity: 1,
+      category: "Dairy",
+      status: "near",
+      temperature: "4",
+      humidity: "40",
+    },
+    {
+      id: 14,
+      name: "Bell Peppers",
+      expiry: "2025-05-9",
+      quantity: 3,
+      category: "Vegetables",
+      status: "near",
+      temperature: "10",
+      humidity: "65",
+    },
+    {
+      id: 15,
+      name: "Oranges",
+      expiry: "2025-05-10",
+      quantity: 4,
+      category: "Fruits",
+      status: "near",
+      temperature: "8",
+      humidity: "60",
+    }
   ]);
   const [error, setError] = useState(null);
   const [upload, { loading }] = useUpload();
@@ -281,6 +420,67 @@ function MainComponent() {
   const [generatedRecipe, setGeneratedRecipe] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [recipeError, setRecipeError] = useState(null);
+  // 1. Add profile and achievements state
+  const [profile, setProfile] = useState({
+    name: "Alex",
+    email: "alex@example.com",
+    avatar: "A",
+    achievements: {
+      firstDonation: true,
+      wasteWarrior: true,
+      inventoryMaster: true,
+      zeroWasteWeek: false,
+      pantryPro: false,
+      recipeExplorer: true,
+      communityHelper: false,
+    },
+    stats: {
+      donations: 3,
+      expiredRemoved: 12,
+      itemsAdded: 25,
+      zeroWasteStreak: 4,
+      aiRecipes: 6,
+    }
+  });
+
+  // 2. Update achievements on actions
+  const updateAchievements = (updates = {}) => {
+    setProfile(prev => {
+      const stats = { ...prev.stats, ...updates };
+      const newAchievements = {
+        ...prev.achievements,
+        firstDonation: stats.donations >= 1 || prev.achievements.firstDonation,
+        wasteWarrior: stats.expiredRemoved >= 10 || prev.achievements.wasteWarrior,
+        inventoryMaster: stats.itemsAdded >= 20 || prev.achievements.inventoryMaster,
+        zeroWasteWeek: stats.zeroWasteStreak >= 7 || prev.achievements.zeroWasteWeek,
+        pantryPro: stats.itemsAdded >= 50 || prev.achievements.pantryPro,
+        recipeExplorer: stats.aiRecipes >= 5 || prev.achievements.recipeExplorer,
+        communityHelper: stats.donations >= 5 || prev.achievements.communityHelper,
+      };
+      // Check if any new badge is unlocked
+      const unlocked = Object.keys(newAchievements).some(
+        key => newAchievements[key] && !prev.achievements[key]
+      );
+      if (unlocked) triggerConfetti();
+      return {
+        ...prev,
+        stats,
+        achievements: newAchievements,
+      };
+    });
+  };
+
+  // Helper to trigger confetti
+  const triggerConfetti = () => {
+    setShowConfetti(false);
+    setTimeout(() => setShowConfetti(true), 100); // retrigger
+  };
+
+  // When saving profile changes, also trigger confetti
+  const handleProfileSave = (newName, newAvatar) => {
+    setProfile(prev => ({ ...prev, name: newName, avatar: newAvatar }));
+    triggerConfetti();
+  };
 
   const getStorageRecommendation = (category, temperature, humidity) => {
     const recommendations = {
@@ -471,6 +671,8 @@ function MainComponent() {
       humidity: "",
     });
     setShowAddModal(false);
+    // 2. Update achievements on actions
+    updateAchievements({ itemsAdded: profile.stats.itemsAdded + 1 });
   };
   const toggleSetting = (setting) => {
     setSettings((prev) => ({
@@ -591,6 +793,8 @@ function MainComponent() {
         timestamp: new Date().toISOString(),
       },
     ]);
+    // 2. Update achievements on actions
+    updateAchievements({ expiredRemoved: profile.stats.expiredRemoved + 1 });
   };
   const handleEditProduct = (product) => {
     setEditingProduct(product);
@@ -680,6 +884,8 @@ function MainComponent() {
         action: `donated ${selectedDonationItem.name} to ${recipient}`,
         timestamp: new Date().toISOString()
       }]);
+      // 2. Update achievements on actions
+      updateAchievements({ donations: profile.stats.donations + 1 });
     }
   };
 
@@ -717,12 +923,21 @@ function MainComponent() {
       }
 
       setGeneratedRecipe(data.recipe);
+      // 2. Update achievements on actions
+      updateAchievements({ aiRecipes: profile.stats.aiRecipes + 1 });
     } catch (err) {
       console.error('Error in recipe generation:', err);
       setRecipeError(err.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Add this new function for handling profile edits
+  const handleEditProfile = (newName, newAvatar) => {
+    setProfile(prev => ({ ...prev, name: newName, avatar: newAvatar }));
+    setShowEditProfileModal(false);
+    triggerConfetti();
   };
 
   return (
@@ -870,6 +1085,45 @@ function MainComponent() {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        @keyframes fadeInProfile {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fadeInProfile {
+          animation: fadeInProfile 0.7s cubic-bezier(.4,0,.2,1);
+        }
+        @keyframes profileCard {
+          0% { transform: scale(0.95) translateY(30px); opacity: 0; }
+          100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .animate-profileCard {
+          animation: profileCard 0.7s cubic-bezier(.4,0,.2,1);
+        }
+        @keyframes avatarGlow {
+          0%, 100% { box-shadow: 0 0 0 0 #6BBF59; }
+          50% { box-shadow: 0 0 30px 10px #6BBF59; }
+        }
+        .animate-avatarGlow {
+          animation: avatarGlow 2s infinite;
+        }
+        @keyframes slideInProfile {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slideInProfile {
+          animation: slideInProfile 0.7s cubic-bezier(.4,0,.2,1);
+        }
+        @keyframes badgePop {
+          0% { transform: scale(0.7); opacity: 0; }
+          80% { transform: scale(1.1); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-badgePop {
+          animation: badgePop 0.5s cubic-bezier(.4,0,.2,1);
+        }
+        .animate-badgeGrid {
+          animation: fadeInProfile 1s 0.2s both;
         }
       `}</style>
       <div
@@ -1427,6 +1681,12 @@ function MainComponent() {
                             )}`}
                           ></div>
                           <button
+                            onClick={() => handleDonateItem(product)}
+                            className="text-[#6BBF59] hover:text-[#5AA548]"
+                          >
+                            <i className="fas fa-gift"></i>
+                          </button>
+                          <button
                             onClick={() => handleEditProduct(product)}
                             className="text-blue-500 hover:text-blue-700"
                           >
@@ -1877,6 +2137,20 @@ function MainComponent() {
                     </div>
                   </div>
 
+                  {/* Add Donate Now Button */}
+                  <div className="mb-6">
+                    <button
+                      onClick={() => setActiveTab("inventory")}
+                      className="w-full bg-[#6BBF59] text-white py-3 rounded-lg hover:bg-[#5AA548] transition-all duration-300 flex items-center justify-center space-x-2"
+                    >
+                      <i className="fas fa-gift"></i>
+                      <span>Donate Items from Your Inventory</span>
+                    </button>
+                    <p className="text-sm text-gray-500 mt-2 text-center">
+                      Select items from your inventory to donate to local food banks
+                    </p>
+                  </div>
+
                   <div className="mb-6">
                     <h3 className="font-semibold mb-3">Local Food Banks & Charities</h3>
                     <div className="space-y-3">
@@ -2032,6 +2306,21 @@ function MainComponent() {
             >
               <i className="fas fa-cog text-xl mb-1"></i>
               <span className="text-xs">Settings</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("profile")}
+              className={`flex-1 p-4 flex flex-col items-center ${
+                activeTab === "profile"
+                  ? settings.darkMode
+                    ? "text-[#F4B400]"
+                    : "text-[#6BBF59]"
+                  : settings.darkMode
+                  ? "text-gray-400"
+                  : "text-gray-500"
+              } hover:scale-110 transition-all duration-300`}
+            >
+              <i className="fas fa-user text-xl mb-1"></i>
+              <span className="text-xs">Profile</span>
             </button>
           </nav>
 
@@ -2482,9 +2771,139 @@ function MainComponent() {
               </div>
             </div>
           )}
+          {activeTab === "profile" && (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 animate-fadeInProfile">
+              <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 relative animate-profileCard">
+                {/* Animated Avatar */}
+                <div className="flex flex-col items-center mb-6">
+                  <div className="relative">
+                    <div className="w-28 h-28 rounded-full bg-[#6BBF59] flex items-center justify-center text-5xl font-bold text-white border-4 border-[#4A90E2] shadow-lg animate-avatarGlow">
+                      {profile.avatar}
+                    </div>
+                    <span className="absolute bottom-2 right-2 bg-white rounded-full px-2 py-1 text-xs font-semibold text-[#6BBF59] shadow animate-bounce">PRO</span>
+                  </div>
+                  <h2 className="text-3xl font-extrabold mt-4 mb-1 animate-slideInProfile">{profile.name}</h2>
+                  <p className="text-gray-500 animate-slideInProfile" style={{ animationDelay: '100ms' }}>{profile.email}</p>
+                  <button 
+                    onClick={() => setShowEditProfileModal(true)}
+                    className="mt-3 px-4 py-2 rounded-lg bg-[#4A90E2] text-white font-semibold hover:bg-[#357ABD] transition-all animate-slideInProfile" 
+                    style={{ animationDelay: '200ms' }}
+                  >
+                    Edit Profile
+                  </button>
+                </div>
+                {/* Achievements Grid */}
+                <h3 className="text-xl font-bold mb-3 text-center animate-slideInProfile" style={{ animationDelay: '300ms' }}>Achievements</h3>
+                <div className="grid grid-cols-3 gap-4 mb-8 animate-badgeGrid">
+                  {/* Badge helper */}
+                  {[
+                    { key: 'firstDonation', icon: '🎁', label: 'First Donation', desc: 'Donate any item.' },
+                    { key: 'wasteWarrior', icon: '🦸‍♂️', label: 'Waste Warrior', desc: 'Remove 10 expired items.' },
+                    { key: 'inventoryMaster', icon: '📦', label: 'Inventory Master', desc: 'Add 20+ items.' },
+                    { key: 'zeroWasteWeek', icon: '🌱', label: 'Zero Waste Week', desc: 'No expired items for 7 days.' },
+                    { key: 'pantryPro', icon: '🏅', label: 'Pantry Pro', desc: 'Add 50+ items.' },
+                    { key: 'recipeExplorer', icon: '🧑‍🍳', label: 'Recipe Explorer', desc: 'Generate 5+ AI recipes.' },
+                    { key: 'communityHelper', icon: '🤝', label: 'Community Helper', desc: 'Donate 5+ times.' },
+                  ].map((badge, i) => (
+                    <div key={badge.key} className="flex flex-col items-center group relative">
+                      {profile.achievements[badge.key] ? (
+                        <span className="text-4xl animate-badgePop cursor-pointer" title={badge.desc}>{badge.icon}</span>
+                      ) : (
+                        <span className="text-4xl text-gray-300 relative cursor-not-allowed animate-badgePop">
+                          <span className="absolute -top-2 -right-2 text-base text-gray-400"><i className="fas fa-lock"></i></span>
+                          {badge.icon}
+                        </span>
+                      )}
+                      <span className={`text-xs mt-1 font-semibold ${profile.achievements[badge.key] ? 'text-[#6BBF59]' : 'text-gray-400'}`}>{badge.label}</span>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        {badge.desc}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Stats Section */}
+                <div className="mb-4 animate-slideInProfile" style={{ animationDelay: '400ms' }}>
+                  <h4 className="font-semibold mb-2 text-center">Your Stats</h4>
+                  <div className="space-y-2">
+                    {/* Animated counters */}
+                    <StatBar label="Donations" value={profile.stats.donations} max={5} color="#6BBF59" />
+                    <StatBar label="Expired Items Removed" value={profile.stats.expiredRemoved} max={10} color="#F4B400" />
+                    <StatBar label="Items Added" value={profile.stats.itemsAdded} max={50} color="#4A90E2" />
+                    <StatBar label="Zero Waste Streak (days)" value={profile.stats.zeroWasteStreak} max={7} color="#6BBF59" />
+                    <StatBar label="AI Recipes Generated" value={profile.stats.aiRecipes} max={5} color="#4A90E2" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {showEditProfileModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+              <div className={`${settings.darkMode ? "bg-gray-800" : "bg-white"} rounded-lg p-6 w-full max-w-md`}>
+                <h2 className={`text-xl font-bold mb-4 ${settings.darkMode ? "text-white" : "text-gray-800"}`}>
+                  Edit Profile
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Name</label>
+                    <input
+                      type="text"
+                      value={profile.name}
+                      onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter your name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Avatar Initial</label>
+                    <input
+                      type="text"
+                      maxLength="1"
+                      value={profile.avatar}
+                      onChange={(e) => setProfile(prev => ({ ...prev, avatar: e.target.value.toUpperCase() }))}
+                      className="w-full p-2 border rounded text-center text-2xl"
+                      placeholder="A"
+                    />
+                  </div>
+                  <button
+                    onClick={() => handleEditProfile(profile.name, profile.avatar)}
+                    className="w-full bg-[#6BBF59] text-white py-2 rounded hover:bg-[#5AA548]"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+                <button
+                  onClick={() => setShowEditProfileModal(false)}
+                  className="absolute top-2 right-2 text-gray-500"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+      <ConfettiBurst trigger={showConfetti} />
     </>
+  );
+}
+
+// StatBar component
+function StatBar({ label, value, max, color }) {
+  const percent = Math.min(100, Math.round((value / max) * 100));
+  return (
+    <div className="mb-2">
+      <div className="flex justify-between text-xs mb-1">
+        <span>{label}</span>
+        <span>{value} / {max}</span>
+      </div>
+      <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-700"
+          style={{ width: `${percent}%`, background: color }}
+        ></div>
+      </div>
+    </div>
   );
 }
 
