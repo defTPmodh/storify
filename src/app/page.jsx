@@ -2767,6 +2767,55 @@ function MainComponent() {
               </div>
             </div>
           )}
+          {showDonateModal && selectedDonationItem && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+              <div className={`${settings.darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"} rounded-xl p-8 w-full max-w-md shadow-2xl relative`}>
+                <button
+                  onClick={() => { setShowDonateModal(false); setSelectedDonationItem(null); }}
+                  className={`absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 transition-colors ${settings.darkMode ? "text-gray-400 hover:text-white" : "text-gray-500"}`}
+                  aria-label="Close"
+                >
+                  <i className="fas fa-times text-xl"></i>
+                </button>
+                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                  <i className="fas fa-gift text-[#6BBF59]"></i>
+                  Donate Item
+                </h2>
+                <div className="mb-4">
+                  <p className="font-semibold">Item:</p>
+                  <div className="mb-2">{selectedDonationItem.name} <span className="text-sm text-gray-400">(Qty: {selectedDonationItem.quantity})</span></div>
+                </div>
+                <div className="mb-4">
+                  <p className="font-semibold mb-2">Choose Recipient:</p>
+                  <select
+                    className={`w-full p-2 rounded border ${settings.darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                    onChange={e => setSelectedDonationItem({ ...selectedDonationItem, recipient: e.target.value })}
+                    value={selectedDonationItem.recipient || ''}
+                  >
+                    <option value="" disabled>Select a food bank</option>
+                    {foodBanks.map(bank => (
+                      <option key={bank.id} value={bank.name}>{bank.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    onClick={() => { setShowDonateModal(false); setSelectedDonationItem(null); }}
+                    className={`px-4 py-2 rounded-lg font-medium border ${settings.darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    disabled={!selectedDonationItem.recipient}
+                    onClick={() => handleConfirmDonation(selectedDonationItem.recipient)}
+                    className={`px-4 py-2 rounded-lg font-medium ${selectedDonationItem.recipient ? 'bg-[#6BBF59] text-white hover:bg-[#5AA548]' : 'bg-gray-400 text-white cursor-not-allowed'}`}
+                  >
+                    Confirm Donation
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <ConfettiBurst trigger={showConfetti} />
