@@ -235,7 +235,7 @@ function MainComponent() {
       timestamp: new Date().toISOString(),
     },
   ]);
-  const [recipes] = useState([
+  const [recipes, setRecipes] = useState([
     {
       id: 1,
       name: "Butter Chicken",
@@ -263,63 +263,7 @@ function MainComponent() {
         "Onions",
       ],
       image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 3,
-      name: "Palak Paneer",
-      time: "30 min",
-      ingredients: [
-        "Spinach",
-        "Paneer",
-        "Onions",
-        "Tomatoes",
-        "Ginger",
-        "Garlic",
-      ],
-      image: "https://images.unsplash.com/photo-1601050591252-0c0a2a0c0a0a?w=500&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 4,
-      name: "Dal Makhani",
-      time: "45 min",
-      ingredients: [
-        "Black Lentils",
-        "Kidney Beans",
-        "Cream",
-        "Butter",
-        "Tomatoes",
-        "Spices",
-      ],
-      image: "https://images.unsplash.com/photo-1601050591252-0c0a2a0c0a0a?w=500&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 5,
-      name: "Chicken Tikka Masala",
-      time: "50 min",
-      ingredients: [
-        "Chicken",
-        "Yogurt",
-        "Tikka Masala",
-        "Cream",
-        "Onions",
-        "Tomatoes",
-      ],
-      image: "https://images.unsplash.com/photo-1601050591252-0c0a2a0c0a0a?w=500&auto=format&fit=crop&q=60",
-    },
-    {
-      id: 6,
-      name: "Aloo Gobi",
-      time: "35 min",
-      ingredients: [
-        "Potatoes",
-        "Cauliflower",
-        "Onions",
-        "Tomatoes",
-        "Turmeric",
-        "Cumin",
-      ],
-      image: "https://images.unsplash.com/photo-1601050591252-0c0a2a0c0a0a?w=500&auto=format&fit=crop&q=60",
-    },
+    }
   ]);
   const [settings, setSettings] = useState({
     notifications: true,
@@ -1809,89 +1753,166 @@ function MainComponent() {
                     </div>
                   )}
 
-                  {generatedRecipe && (
-                    <div className={`${settings.darkMode ? "bg-gray-800" : "bg-white"} rounded-lg p-6 shadow-lg animate-recipeAppear`}>
-                      <div className="flex items-center justify-between mb-6">
-                        <h3 className={`text-2xl font-bold ${settings.darkMode ? "text-white" : "text-gray-800"} animate-slideInRight`}>
-                          <i className="fas fa-utensils text-[#6BBF59] mr-2 animate-bounce"></i>
-                          Generated Recipe
-                        </h3>
-                        <button 
-                          onClick={() => setGeneratedRecipe(null)}
-                          className={`p-2 rounded-full hover:scale-110 transition-transform ${settings.darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
-                        >
-                          <i className="fas fa-times"></i>
-                        </button>
+                  {generatedRecipe && (() => {
+                    // Parse the recipe string for sections
+                    const lines = generatedRecipe.split('\n').map(l => l.trim()).filter(Boolean);
+                    let title = '';
+                    let prepTime = '';
+                    let cookTime = '';
+                    let servings = '';
+                    let ingredients = [];
+                    let steps = [];
+                    let tips = [];
+                    let section = '';
+                    const timeRegex = /([0-9]+\s*(min|mins|minutes|hr|hrs|hour|hours))/i;
+                    for (let line of lines) {
+                      if (!title && /^\d+\./.test(line)) {
+                        title = line.replace(/^\d+\.\s*/, '').replace(/\*\*/g, '').trim();
+                        continue;
+                      }
+                      if (/prep time/i.test(line)) {
+                        const match = line.match(timeRegex);
+                        if (match) prepTime = match[1];
+                        else if (line.replace(/prep time:?/i, '').trim()) tips.push(line.replace(/prep time:?/i, '').trim());
+                        continue;
+                      }
+                      if (/cook time/i.test(line)) {
+                        const match = line.match(timeRegex);
+                        if (match) cookTime = match[1];
+                        else if (line.replace(/cook time:?/i, '').trim()) tips.push(line.replace(/cook time:?/i, '').trim());
+                        continue;
+                      }
+                      if (/servings?/i.test(line)) {
+                        const match = line.match(/\d+/);
+                        if (match) servings = match[0];
+                        continue;
+                      }
+                      if (/ingredient/i.test(line)) {
+                        section = 'ingredients';
+                        continue;
+                      }
+                      if (/step/i.test(line)) {
+                        section = 'steps';
+                        continue;
+                      }
+                      if (section === 'ingredients' && (line.startsWith('-') || /^[•*]/.test(line))) {
+                        ingredients.push(line.replace(/^[-•*]\s*/, ''));
+                        continue;
+                      }
+                      if (section === 'steps' && (line.match(/^\d+\./) || line.length > 0)) {
+                        steps.push(line.replace(/^\d+\.\s*/, ''));
+                        continue;
+                      }
+                      // If it's a tip or extra info
+                      if (section && line && !line.startsWith('-') && !/^[•*]/.test(line) && !/^\d+\./.test(line)) {
+                        tips.push(line);
+                      }
+                    }
+                    return (
+                      <div className={`${settings.darkMode ? "bg-gray-800" : "bg-white"} rounded-lg p-6 shadow-lg animate-recipeAppear`}> 
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className={`text-2xl font-extrabold w-full text-center ${settings.darkMode ? "text-white" : "text-gray-800"} animate-slideInRight`}>
+                            <i className="fas fa-utensils text-[#6BBF59] mr-2 animate-bounce"></i>
+                            {title || 'Generated Recipe'}
+                          </h3>
+                          <button 
+                            onClick={() => setGeneratedRecipe(null)}
+                            className={`absolute right-6 top-8 p-2 rounded-full hover:scale-110 transition-transform ${settings.darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+                          >
+                            <i className="fas fa-times"></i>
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap justify-center gap-6 mb-6">
+                          {prepTime && (
+                            <div className="text-center">
+                              <div className="font-semibold text-sm text-gray-500">Prep Time</div>
+                              <div className={`font-bold text-lg ${settings.darkMode ? 'text-white' : 'text-gray-800'}`}>{prepTime}</div>
+                            </div>
+                          )}
+                          {cookTime && (
+                            <div className="text-center">
+                              <div className="font-semibold text-sm text-gray-500">Cook Time</div>
+                              <div className={`font-bold text-lg ${settings.darkMode ? 'text-white' : 'text-gray-800'}`}>{cookTime}</div>
+                            </div>
+                          )}
+                          {servings && (
+                            <div className="text-center">
+                              <div className="font-semibold text-sm text-gray-500">Servings</div>
+                              <div className={`font-bold text-lg ${settings.darkMode ? 'text-white' : 'text-gray-800'}`}>{servings}</div>
+                            </div>
+                          )}
+                        </div>
+                        {ingredients.length > 0 && (
+                          <div className="mb-6">
+                            <h4 className={`text-lg font-semibold mb-2 ${settings.darkMode ? 'text-white' : 'text-gray-800'}`}>Ingredients</h4>
+                            <ul className="list-disc pl-6 space-y-1">
+                              {ingredients.map((item, idx) => (
+                                <li key={idx} className={settings.darkMode ? 'text-gray-200' : 'text-gray-700'}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {steps.length > 0 && (
+                          <div>
+                            <h4 className={`text-lg font-semibold mb-2 ${settings.darkMode ? 'text-white' : 'text-gray-800'}`}>Steps</h4>
+                            <ol className="list-decimal pl-6 space-y-2">
+                              {steps.map((step, idx) => (
+                                <li key={idx} className={settings.darkMode ? 'text-gray-200' : 'text-gray-700'}>{step}</li>
+                              ))}
+                            </ol>
+                          </div>
+                        )}
+                        {tips.length > 0 && (
+                          <div className="mt-6">
+                            <h4 className={`text-lg font-semibold mb-2 ${settings.darkMode ? 'text-white' : 'text-gray-800'}`}>Tip</h4>
+                            <ul className="list-disc pl-6 space-y-1">
+                              {tips.map((tip, idx) => (
+                                <li key={idx} className={settings.darkMode ? 'text-gray-300' : 'text-gray-600'}>{tip}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        <div className="mt-6 flex justify-end space-x-3 animate-fadeIn" style={{ animationDelay: '800ms' }}>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(generatedRecipe);
+                            }}
+                            className={`px-4 py-2 rounded-lg flex items-center space-x-2 hover:scale-105 transition-transform ${
+                              settings.darkMode 
+                                ? "bg-gray-700 hover:bg-gray-600 text-white" 
+                                : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                            }`}
+                          >
+                            <i className="fas fa-copy"></i>
+                            <span>Copy Recipe</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setRecipes(prev => [
+                                ...prev,
+                                {
+                                  id: prev.length + 1,
+                                  name: title || 'Generated Recipe',
+                                  time: (prepTime && cookTime) ? `${prepTime} + ${cookTime}` : prepTime || cookTime || '',
+                                  ingredients,
+                                  image: "https://images.unsplash.com/photo-1601050591252-0c0a2a0c0a0a?w=500&auto=format&fit=crop&q=60"
+                                }
+                              ]);
+                              setGeneratedRecipe(null);
+                            }}
+                            className={`px-4 py-2 rounded-lg flex items-center space-x-2 hover:scale-105 transition-transform ${
+                              settings.darkMode 
+                                ? "bg-[#6BBF59] hover:bg-[#5AA548] text-white" 
+                                : "bg-[#6BBF59] hover:bg-[#5AA548] text-white"
+                            }`}
+                          >
+                            <i className="fas fa-heart"></i>
+                            <span>Save to Favorites</span>
+                          </button>
+                        </div>
                       </div>
-                      
-                      <div className="prose max-w-none">
-                        {generatedRecipe.split('\n').map((line, index) => {
-                          // Check if line is a section header (starts with a number and dot)
-                          if (/^\d+\./.test(line)) {
-                            return (
-                              <div key={index} className="animate-recipeSection" style={{ animationDelay: `${index * 150}ms` }}>
-                                <h4 className={`text-xl font-semibold mt-6 mb-3 ${settings.darkMode ? "text-white" : "text-gray-800"} flex items-center`}>
-                                  <span className="w-8 h-8 rounded-full bg-[#6BBF59] text-white flex items-center justify-center mr-3 animate-pulse">
-                                    {line.split('.')[0]}
-                                  </span>
-                                  {line.split('.').slice(1).join('.').trim()}
-                                </h4>
-                              </div>
-                            );
-                          }
-                          // Check if line is a list item
-                          else if (line.trim().startsWith('•')) {
-                            return (
-                              <div key={index} className={`flex items-start space-x-2 mb-2 ${settings.darkMode ? "text-gray-300" : "text-gray-700"} animate-recipeItem`} style={{ animationDelay: `${index * 150}ms` }}>
-                                <span className="text-[#6BBF59] mt-1 animate-pulse">•</span>
-                                <span>{line.replace('•', '').trim()}</span>
-                              </div>
-                            );
-                          }
-                          // Regular paragraph
-                          else if (line.trim()) {
-                            return (
-                              <p key={index} className={`mb-3 ${settings.darkMode ? "text-gray-300" : "text-gray-700"} animate-recipeItem`} style={{ animationDelay: `${index * 150}ms` }}>
-                                {line}
-                              </p>
-                            );
-                          }
-                          // Empty line
-                          return <div key={index} className="h-2"></div>;
-                        })}
-                      </div>
-
-                      <div className="mt-6 flex justify-end space-x-3 animate-fadeIn" style={{ animationDelay: '800ms' }}>
-                        <button 
-                          onClick={() => {
-                            navigator.clipboard.writeText(generatedRecipe);
-                            // You could add a toast notification here
-                          }}
-                          className={`px-4 py-2 rounded-lg flex items-center space-x-2 hover:scale-105 transition-transform ${
-                            settings.darkMode 
-                              ? "bg-gray-700 hover:bg-gray-600 text-white" 
-                              : "bg-gray-100 hover:bg-gray-200 text-gray-800"
-                          }`}
-                        >
-                          <i className="fas fa-copy"></i>
-                          <span>Copy Recipe</span>
-                        </button>
-                        <button 
-                          onClick={() => {
-                            // You could add a save to favorites feature here
-                          }}
-                          className={`px-4 py-2 rounded-lg flex items-center space-x-2 hover:scale-105 transition-transform ${
-                            settings.darkMode 
-                              ? "bg-[#6BBF59] hover:bg-[#5AA548] text-white" 
-                              : "bg-[#6BBF59] hover:bg-[#5AA548] text-white"
-                          }`}
-                        >
-                          <i className="fas fa-heart"></i>
-                          <span>Save to Favorites</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
 
                 {/* Existing Recipes Section */}
