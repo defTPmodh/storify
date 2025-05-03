@@ -1765,6 +1765,8 @@ function MainComponent() {
                     let tips = [];
                     let section = '';
                     const timeRegex = /([0-9]+\s*(min|mins|minutes|hr|hrs|hour|hours))/i;
+                    
+                    // First pass: Look for title and timing info
                     for (let line of lines) {
                       if (!title && /^\d+\./.test(line)) {
                         title = line.replace(/^\d+\.\s*/, '').replace(/\*\*/g, '').trim();
@@ -1772,21 +1774,23 @@ function MainComponent() {
                       }
                       if (/prep time/i.test(line)) {
                         const match = line.match(timeRegex);
-                        if (match) prepTime = match[1];
-                        else if (line.replace(/prep time:?/i, '').trim()) tips.push(line.replace(/prep time:?/i, '').trim());
+                        prepTime = match ? match[1] : '-';
                         continue;
                       }
                       if (/cook time/i.test(line)) {
                         const match = line.match(timeRegex);
-                        if (match) cookTime = match[1];
-                        else if (line.replace(/cook time:?/i, '').trim()) tips.push(line.replace(/cook time:?/i, '').trim());
+                        cookTime = match ? match[1] : '-';
                         continue;
                       }
                       if (/servings?/i.test(line)) {
                         const match = line.match(/\d+/);
-                        if (match) servings = match[0];
+                        servings = match ? match[0] : '-';
                         continue;
                       }
+                    }
+
+                    // Second pass: Parse ingredients, steps, and tips
+                    for (let line of lines) {
                       if (/ingredient/i.test(line)) {
                         section = 'ingredients';
                         continue;
@@ -1808,6 +1812,12 @@ function MainComponent() {
                         tips.push(line);
                       }
                     }
+
+                    // Ensure we have default values if not found
+                    if (!prepTime) prepTime = '-';
+                    if (!cookTime) cookTime = '-';
+                    if (!servings) servings = '-';
+
                     return (
                       <div className={`${settings.darkMode ? "bg-gray-800" : "bg-white"} rounded-lg p-6 shadow-lg animate-recipeAppear`}> 
                         <div className="flex items-center justify-between mb-6">
@@ -1864,7 +1874,7 @@ function MainComponent() {
                         )}
                         {tips.length > 0 && (
                           <div className="mt-6">
-                            <h4 className={`text-lg font-semibold mb-2 ${settings.darkMode ? 'text-white' : 'text-gray-800'}`}>Tip</h4>
+                            <h4 className={`text-lg font-bold mb-2 uppercase tracking-wide ${settings.darkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>Tips</h4>
                             <ul className="list-disc pl-6 space-y-1">
                               {tips.map((tip, idx) => (
                                 <li key={idx} className={settings.darkMode ? 'text-gray-300' : 'text-gray-600'}>{tip}</li>
