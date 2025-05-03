@@ -1499,26 +1499,20 @@ function MainComponent() {
                 </div>
 
                 {isLoggedIn && (
-                  <div className={`${
-                    settings.darkMode ? "bg-gray-700" : "bg-white"
-                  } rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 card-hover`}>
-                    <h2 className="text-xl font-bold mb-4">Product Categories</h2>
+                  <div className={`${settings.darkMode ? "bg-gray-700" : "bg-white"} rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 card-hover`}>
+                    <h2 className={`text-xl font-bold mb-4 ${settings.darkMode ? "text-white" : "text-gray-800"}`}>Product Categories</h2>
                     <div className="grid grid-cols-2 gap-4">
                       {categories.slice(1).map((category, index) => (
                         <div
                           key={category}
-                          className={`${
-                            settings.darkMode ? "bg-gray-800" : "bg-gray-50"
-                          } p-4 rounded-lg hover:shadow-lg transition-all duration-300 card-hover`}
+                          className={`${settings.darkMode ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-lg hover:shadow-lg transition-all duration-300 card-hover`}
                           style={{
                             animation: `slideIn ${0.3 + index * 0.1}s ease-out`,
                           }}
                         >
                           <div className="flex justify-between items-center mb-2">
-                            <span className="font-medium">{category}</span>
-                            <span className="text-sm text-gray-500">
-                              {productStats[category]} items
-                            </span>
+                            <span className={`font-medium ${settings.darkMode ? "text-white" : "text-gray-800"}`}>{category}</span>
+                            <span className={`text-sm ${settings.darkMode ? "text-gray-300" : "text-gray-500"}`}>{productStats[category]} items</span>
                           </div>
                           <div className="h-2 bg-gray-200 rounded overflow-hidden">
                             <div
@@ -2142,19 +2136,18 @@ function MainComponent() {
                   </h2>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div className={`${settings.darkMode ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-lg`}>
+                    <div className={`${settings.darkMode ? "bg-gray-800 text-white" : "bg-gray-50 text-gray-800"} p-4 rounded-lg`}>
                       <h3 className="font-semibold mb-2">Your Impact</h3>
                       <div className="text-3xl font-bold text-[#6BBF59]">{donationHistory.length}</div>
-                      <p className="text-sm text-gray-500">Items Donated</p>
+                      <p className={`text-sm ${settings.darkMode ? "text-gray-300" : "text-gray-500"}`}>Items Donated</p>
                     </div>
-                    <div className={`${settings.darkMode ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-lg`}>
+                    <div className={`${settings.darkMode ? "bg-gray-800 text-white" : "bg-gray-50 text-gray-800"} p-4 rounded-lg`}>
                       <h3 className="font-semibold mb-2">Active Food Drives</h3>
                       <div className="text-3xl font-bold text-[#6BBF59]">{communityEvents.length}</div>
-                      <p className="text-sm text-gray-500">Upcoming Events</p>
+                      <p className={`text-sm ${settings.darkMode ? "text-gray-300" : "text-gray-500"}`}>Upcoming Events</p>
                     </div>
                   </div>
 
-                  {/* Add Donate Now Button */}
                   <div className="mb-6">
                     <button
                       onClick={() => setActiveTab("inventory")}
@@ -2163,32 +2156,30 @@ function MainComponent() {
                       <i className="fas fa-gift"></i>
                       <span>Donate Items from Your Inventory</span>
                     </button>
-                    <p className="text-sm text-gray-500 mt-2 text-center">
-                      Select items from your inventory to donate to local food banks
-                    </p>
+                    <p className={`text-sm mt-2 text-center ${settings.darkMode ? "text-gray-300" : "text-gray-500"}`}>Select items from your inventory to donate to local food banks</p>
                   </div>
 
                   <div className="mb-6">
-                    <h3 className="font-semibold mb-3">Local Food Banks & Charities</h3>
+                    <h3 className={`font-semibold mb-3 ${settings.darkMode ? "text-white" : "text-gray-800"}`}>Local Food Banks & Charities</h3>
                     <div className="space-y-3">
                       {foodBanks.map(bank => (
-                        <div key={bank.id} className={`${settings.darkMode ? "bg-gray-800" : "bg-gray-50"} p-4 rounded-lg`}>
+                        <div key={bank.id} className={`${settings.darkMode ? "bg-gray-800 text-white" : "bg-gray-50 text-gray-800"} p-4 rounded-lg`}>
                           <div className="flex justify-between items-start">
                             <div>
                               <h4 className="font-medium">{bank.name}</h4>
-                              <p className="text-sm text-gray-500">{bank.address}</p>
-                              <p className="text-sm text-gray-500">{bank.hours}</p>
-                              <a href={bank.website} target="_blank" rel="noopener noreferrer" className="text-sm text-[#6BBF59] hover:underline">
+                              <p className={`text-sm ${settings.darkMode ? "text-gray-300" : "text-gray-500"}`}>{bank.address}</p>
+                              <p className={`text-sm ${settings.darkMode ? "text-gray-300" : "text-gray-500"}`}>{bank.hours}</p>
+                              <a href={bank.website} target="_blank" rel="noopener noreferrer" className={`text-sm ${settings.darkMode ? "text-[#6BBF59]" : "text-[#6BBF59]"} hover:underline`}>
                                 Visit Website
                               </a>
                             </div>
-                            <span className="text-sm text-[#6BBF59]">{bank.distance}</span>
+                            <span className={`text-sm ${settings.darkMode ? "text-[#6BBF59]" : "text-[#6BBF59]"}`}>{bank.distance}</span>
                           </div>
                           <div className="mt-2">
-                            <p className="text-sm font-medium">Accepted Items:</p>
+                            <p className={`text-sm font-medium ${settings.darkMode ? "text-white" : "text-gray-800"}`}>Accepted Items:</p>
                             <div className="flex flex-wrap gap-1 mt-1">
                               {bank.acceptedItems.map((item, index) => (
-                                <span key={index} className="text-xs bg-[#6BBF59]/10 text-[#6BBF59] px-2 py-1 rounded">
+                                <span key={index} className={`text-xs px-2 py-1 rounded ${settings.darkMode ? "bg-[#6BBF59]/20 text-[#6BBF59]" : "bg-[#6BBF59]/10 text-[#6BBF59]"}`}>
                                   {item}
                                 </span>
                               ))}
@@ -2365,6 +2356,44 @@ function MainComponent() {
           {activeTab === "profile" && isLoggedIn && (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 animate-fadeInProfile">
               <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 relative animate-profileCard">
+                {/* Gen Z Motivational Quote */}
+                {(() => {
+                  const praiseQuotes = [
+                    "You're absolutely slaying it! 🚀",
+                    "Certified Zero Waste Icon ✨",
+                    "Legendary Pantry Pro 🏆",
+                    "You're a real one 💯",
+                    "Eco Hero in the making 🌱",
+                    "Major flex: Saving the planet! 😎",
+                    "Vibe check: Immaculate 🌈",
+                    "You understood the assignment! 📦",
+                    "Lowkey inspiring everyone 👀",
+                    "Main character energy! 🎬",
+                    "You're built different 🔥",
+                    "No cap, you're crushing it! 🧢",
+                    "Sustainability goals, fr fr 🙌",
+                    "Big W for the environment! 🥇",
+                  ];
+                  const randomQuote = praiseQuotes[Math.floor(Math.random() * praiseQuotes.length)];
+                  return (
+                    <div className="mb-8 text-center">
+                      <span
+                        className={
+                          `block text-2xl md:text-2xl font-extrabold mb-2 select-none ` +
+                          (settings.darkMode
+                            ? 'text-white'
+                            : 'text-gray-900')
+                        }
+                        style={{letterSpacing: '0.01em'}}
+                      >
+                        <span className={`text-4xl align-top font-extrabold mr-2 ${settings.darkMode ? 'text-[#6BBF59]' : 'text-[#6BBF59]'}`}>"
+                        </span>
+                        <span className={`italic font-semibold ${settings.darkMode ? 'text-[#E0E7EF]' : 'text-[#22223B]'}`}>{randomQuote}</span>
+                        <span className={`text-4xl align-bottom font-extrabold ml-2 ${settings.darkMode ? 'text-[#4A90E2]' : 'text-[#4A90E2]'}`}>"</span>
+                      </span>
+                    </div>
+                  );
+                })()}
                 {/* Animated Avatar */}
                 <div className="flex flex-col items-center mb-6">
                   <div className="relative">
@@ -2682,10 +2711,10 @@ function MainComponent() {
                   Choose Your Plan
                 </h2>
                 <div className="space-y-4">
-                  <div className="w-full p-4 border rounded-lg">
+                  <div className={`w-full p-4 border rounded-lg ${settings.darkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-200 text-gray-800"}`}>
                     <h3 className="font-bold">Free Plan</h3>
-                    <p className="text-sm text-gray-500">Basic features with 30-day premium trial</p>
-                    <ul className="mt-2 space-y-1 text-sm text-gray-600">
+                    <p className={`text-sm ${settings.darkMode ? "text-gray-300" : "text-gray-500"}`}>Basic features with 30-day premium trial</p>
+                    <ul className={`mt-2 space-y-1 text-sm ${settings.darkMode ? "text-gray-200" : "text-gray-600"}`}>
                       <li>• Up to 30 items</li>
                       <li>• Basic inventory management</li>
                       <li>• Manual item entry</li>
@@ -2694,7 +2723,7 @@ function MainComponent() {
                     </ul>
                     <button
                       onClick={() => handleSelectPlan("free")}
-                      className="mt-4 w-full py-2 border rounded hover:bg-gray-50"
+                      className={`mt-4 w-full py-2 border rounded hover:bg-gray-50 ${settings.darkMode ? "border-[#6BBF59] text-[#6BBF59] hover:bg-[#6BBF59]/10" : "border-[#4A90E2] text-[#4A90E2]"}`}
                     >
                       Start Free Plan with Trial
                     </button>
