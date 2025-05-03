@@ -1439,7 +1439,10 @@ function MainComponent() {
                   </h2>
                   <div className="space-y-3">
                     {products
-                      .filter((p) => p.status === "near")
+                      .filter((p) => {
+                        const daysUntilExpiry = calculateDaysUntilExpiry(p.expiry);
+                        return daysUntilExpiry <= 3 && daysUntilExpiry > 0;
+                      })
                       .map((product, index) => (
                         <div
                           key={product.id}
@@ -1474,10 +1477,24 @@ function MainComponent() {
                                 </p>
                               </div>
                             </div>
-                            <div className={`w-3 h-3 rounded-full ${getStatusColor(product.status)}`}></div>
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-3 h-3 rounded-full ${getStatusColor(product.status)}`}></div>
+                              <button
+                                onClick={() => handleDonateItem(product)}
+                                className="text-[#6BBF59] hover:text-[#5AA548]"
+                              >
+                                <i className="fas fa-gift"></i>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}
+                    {products.filter(p => calculateDaysUntilExpiry(p.expiry) <= 3 && calculateDaysUntilExpiry(p.expiry) > 0).length === 0 && (
+                      <div className={`text-center py-4 ${settings.darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                        <i className="fas fa-check-circle text-green-500 text-2xl mb-2"></i>
+                        <p>No items expiring within the next 3 days!</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -2307,471 +2324,45 @@ function MainComponent() {
               <i className="fas fa-cog text-xl mb-1"></i>
               <span className="text-xs">Settings</span>
             </button>
-            <button
-              onClick={() => setActiveTab("profile")}
-              className={`flex-1 p-4 flex flex-col items-center ${
-                activeTab === "profile"
-                  ? settings.darkMode
-                    ? "text-[#F4B400]"
-                    : "text-[#6BBF59]"
-                  : settings.darkMode
-                  ? "text-gray-400"
-                  : "text-gray-500"
-              } hover:scale-110 transition-all duration-300`}
-            >
-              <i className="fas fa-user text-xl mb-1"></i>
-              <span className="text-xs">Profile</span>
-            </button>
+            {isLoggedIn && (
+              <button
+                onClick={() => setActiveTab("profile")}
+                className={`flex-1 p-4 flex flex-col items-center ${
+                  activeTab === "profile"
+                    ? settings.darkMode
+                      ? "text-[#F4B400]"
+                      : "text-[#6BBF59]"
+                    : settings.darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                } hover:scale-110 transition-all duration-300`}
+              >
+                <i className="fas fa-user text-xl mb-1"></i>
+                <span className="text-xs">Profile</span>
+              </button>
+            )}
           </nav>
 
-          {showLoginModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-              <div
-                className={`${
-                  settings.darkMode ? "bg-gray-800" : "bg-white"
-                } rounded-lg p-6 w-full max-w-md`}
-              >
-                <h2
-                  className={`text-xl font-bold mb-4 ${
-                    settings.darkMode ? "text-white" : "text-gray-800"
-                  }`}
+          {/* Add this condition before the profile section */}
+          {activeTab === "profile" && !isLoggedIn && (
+            <div className="p-4 text-center">
+              <div className="bg-purple-50 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 card-hover">
+                <i className="fas fa-lock text-4xl text-purple-600 mb-4 floating"></i>
+                <h3 className="font-bold mb-2">Login Required</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Please login to view your profile and achievements
+                </p>
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:scale-105 transition-all duration-300"
                 >
                   Login
-                </h2>
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Email"
-                      value={loginForm.email}
-                      onChange={(e) =>
-                        setLoginForm({ ...loginForm, email: e.target.value })
-                      }
-                      className="w-full p-2 border rounded"
-                      required
-                    />
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      placeholder="Password"
-                      value={loginForm.password}
-                      onChange={(e) =>
-                        setLoginForm({ ...loginForm, password: e.target.value })
-                      }
-                      className="w-full p-2 border rounded"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2 top-2 text-gray-500"
-                    >
-                      <i
-                        className={`fas ${
-                          showPassword ? "fa-eye-slash" : "fa-eye"
-                        }`}
-                      ></i>
-                    </button>
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full bg-[#4A90E2] text-white py-2 rounded"
-                  >
-                    Login
-                  </button>
-                </form>
-                <button
-                  onClick={() => setShowLoginModal(false)}
-                  className="absolute top-2 right-2 text-gray-500"
-                >
-                  <i className="fas fa-times"></i>
                 </button>
               </div>
             </div>
           )}
 
-          {showRegisterModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-              <div
-                className={`${
-                  settings.darkMode ? "bg-gray-800" : "bg-white"
-                } rounded-lg p-6 w-full max-w-md`}
-              >
-                <h2
-                  className={`text-xl font-bold mb-4 ${
-                    settings.darkMode ? "text-white" : "text-gray-800"
-                  }`}
-                >
-                  Register
-                </h2>
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Email"
-                      value={registerForm.email}
-                      onChange={(e) =>
-                        setRegisterForm({
-                          ...registerForm,
-                          email: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded"
-                      required
-                    />
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      placeholder="Password"
-                      value={registerForm.password}
-                      onChange={(e) =>
-                        setRegisterForm({
-                          ...registerForm,
-                          password: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2 top-2 text-gray-500"
-                    >
-                      <i
-                        className={`fas ${
-                          showPassword ? "fa-eye-slash" : "fa-eye"
-                        }`}
-                      ></i>
-                    </button>
-                  </div>
-                  <div>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      placeholder="Confirm password"
-                      value={registerForm.confirmPassword}
-                      onChange={(e) =>
-                        setRegisterForm({
-                          ...registerForm,
-                          confirmPassword: e.target.value,
-                        })
-                      }
-                      className="w-full p-2 border rounded"
-                      required
-                    />
-                  </div>
-                  {error && <p className="text-red-500 text-sm">{error}</p>}
-                  <button
-                    type="submit"
-                    className="w-full bg-[#4A90E2] text-white py-2 rounded"
-                  >
-                    Register
-                  </button>
-                </form>
-                <button
-                  onClick={() => {
-                    setShowRegisterModal(false);
-                    setError(null);
-                  }}
-                  className="absolute top-2 right-2 text-gray-500"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {showPlansModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-              <div
-                className={`${
-                  settings.darkMode ? "bg-gray-800" : "bg-white"
-                } rounded-lg p-6 w-full max-w-md`}
-              >
-                <h2
-                  className={`text-xl font-bold mb-4 ${
-                    settings.darkMode ? "text-white" : "text-gray-800"
-                  }`}
-                >
-                  Choose Your Plan
-                </h2>
-                <div className="space-y-4">
-                  <div className="w-full p-4 border rounded-lg">
-                    <h3 className="font-bold">Free Plan</h3>
-                    <p className="text-sm text-gray-500">Basic features with 30-day premium trial</p>
-                    <ul className="mt-2 space-y-1 text-sm text-gray-600">
-                      <li>• Up to 30 items</li>
-                      <li>• Basic inventory management</li>
-                      <li>• Manual item entry</li>
-                      <li>• 30 free barcode scans</li>
-                      <li className="text-green-600 font-medium">• 30-day premium trial included!</li>
-                    </ul>
-                    <button
-                      onClick={() => handleSelectPlan("free")}
-                      className="mt-4 w-full py-2 border rounded hover:bg-gray-50"
-                    >
-                      Start Free Plan with Trial
-                    </button>
-                  </div>
-                  <div className="w-full p-4 bg-[#4A90E2] text-white rounded-lg">
-                    <h3 className="font-bold">Premium Plan</h3>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <p className="text-sm">AED 6.99/month</p>
-                      <span className="text-xs bg-white/20 px-2 py-1 rounded">or</span>
-                      <p className="text-sm">AED 79.99/year</p>
-                    </div>
-                    <ul className="mt-2 space-y-1 text-sm">
-                      <li>• Unlimited items</li>
-                      <li>• Smart home integration</li>
-                      <li>• Unlimited barcode scanning</li>
-                      <li>• Family sharing</li>
-                      <li>• Premium support</li>
-                    </ul>
-                    <div className="mt-4 space-y-2">
-                      <button
-                        onClick={() => handleSelectPlan("premium")}
-                        className="w-full py-2 bg-white text-[#4A90E2] rounded hover:bg-gray-50"
-                      >
-                        Get Premium Monthly
-                      </button>
-                      <button
-                        onClick={() => handleSelectPlan("premium-yearly")}
-                        className="w-full py-2 bg-white/20 text-white rounded hover:bg-white/30"
-                      >
-                        Get Premium Yearly (Save 5%)
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowPlansModal(false)}
-                  className="absolute top-2 right-2 text-gray-500"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {showAddModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-              <div
-                className={`${
-                  settings.darkMode ? "bg-gray-800" : "bg-white"
-                } rounded-lg p-6 w-full max-w-md`}
-              >
-                <h2
-                  className={`text-xl font-bold mb-4 ${
-                    settings.darkMode ? "text-white" : "text-gray-800"
-                  }`}
-                >
-                  {editingProduct ? "Edit Item" : "Add New Item"}
-                </h2>
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Item name"
-                    value={newProduct.name}
-                    onChange={(e) =>
-                      setNewProduct({ ...newProduct, name: e.target.value })
-                    }
-                    className="w-full p-2 border rounded"
-                  />
-                  <input
-                    type="date"
-                    name="expiry"
-                    value={newProduct.expiry}
-                    onChange={(e) =>
-                      setNewProduct({ ...newProduct, expiry: e.target.value })
-                    }
-                    className="w-full p-2 border rounded"
-                  />
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      name="quantity"
-                      value={newProduct.quantity}
-                      onChange={(e) =>
-                        setNewProduct({
-                          ...newProduct,
-                          quantity: parseInt(e.target.value),
-                        })
-                      }
-                      min="1"
-                      className="w-24 p-2 border rounded"
-                    />
-                    <select
-                      name="category"
-                      value={newProduct.category}
-                      onChange={(e) =>
-                        setNewProduct({
-                          ...newProduct,
-                          category: e.target.value,
-                        })
-                      }
-                      className="flex-1 p-2 border rounded"
-                    >
-                      {categories.slice(1).map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      name="temperature"
-                      placeholder="Temperature (°C)"
-                      value={newProduct.temperature}
-                      onChange={(e) =>
-                        setNewProduct({
-                          ...newProduct,
-                          temperature: e.target.value,
-                        })
-                      }
-                      className="w-1/2 p-2 border rounded"
-                    />
-                    <input
-                      type="number"
-                      name="humidity"
-                      placeholder="Humidity (%)"
-                      value={newProduct.humidity}
-                      onChange={(e) =>
-                        setNewProduct({
-                          ...newProduct,
-                          humidity: e.target.value,
-                        })
-                      }
-                      className="w-1/2 p-2 border rounded"
-                    />
-                  </div>
-                  <button
-                    onClick={handleAddProduct}
-                    className="w-full bg-[#4A90E2] text-white py-2 rounded"
-                  >
-                    {editingProduct ? "Save Changes" : "Add Item"}
-                  </button>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setEditingProduct(null);
-                    setNewProduct({
-                      name: "",
-                      expiry: "",
-                      quantity: 1,
-                      location: "pantry",
-                      category: "Pantry",
-                      temperature: "",
-                      humidity: "",
-                    });
-                  }}
-                  className="absolute top-2 right-2 text-gray-500"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {showInviteModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-              <div
-                className={`${
-                  settings.darkMode ? "bg-gray-800" : "bg-white"
-                } rounded-lg p-6 w-full max-w-md`}
-              >
-                <h2
-                  className={`text-xl font-bold mb-4 ${
-                    settings.darkMode ? "text-white" : "text-gray-800"
-                  }`}
-                >
-                  Invite Member
-                </h2>
-                <div className="space-y-4">
-                  <input
-                    type="email"
-                    name="inviteEmail"
-                    placeholder="Email address"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="w-full p-2 border rounded"
-                  />
-                  <select
-                    value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value)}
-                    className="w-full p-2 border rounded"
-                  >
-                    <option value="view">View Only</option>
-                    <option value="edit">Full Access</option>
-                  </select>
-                  <button
-                    onClick={handleInviteMember}
-                    className="w-full bg-[#4A90E2] text-white py-2 rounded"
-                  >
-                    Send Invite
-                  </button>
-                </div>
-                <button
-                  onClick={() => setShowInviteModal(false)}
-                  className="absolute top-2 right-2 text-gray-500"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {showDonateModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-              <div className={`${settings.darkMode ? "bg-gray-800" : "bg-white"} rounded-lg p-6 w-full max-w-md`}>
-                <h2 className={`text-xl font-bold mb-4 ${settings.darkMode ? "text-white" : "text-gray-800"}`}>
-                  Donate Item
-                </h2>
-                <div className="space-y-4">
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <h3 className="font-medium">{selectedDonationItem?.name}</h3>
-                    <p className="text-sm text-gray-500">Quantity: {selectedDonationItem?.quantity}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Select Recipient</label>
-                    <select className="w-full p-2 border rounded">
-                      {foodBanks.map(bank => (
-                        <option key={bank.id} value={bank.name}>{bank.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <button
-                    onClick={() => handleConfirmDonation(foodBanks[0].name)}
-                    className="w-full bg-[#6BBF59] text-white py-2 rounded hover:bg-[#5AA548]"
-                  >
-                    Confirm Donation
-                  </button>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowDonateModal(false);
-                    setSelectedDonationItem(null);
-                  }}
-                  className="absolute top-2 right-2 text-gray-500"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-          )}
-          {activeTab === "profile" && (
+          {activeTab === "profile" && isLoggedIn && (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 animate-fadeInProfile">
               <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 relative animate-profileCard">
                 {/* Animated Avatar */}
@@ -2874,6 +2465,272 @@ function MainComponent() {
                 </div>
                 <button
                   onClick={() => setShowEditProfileModal(false)}
+                  className="absolute top-2 right-2 text-gray-500"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showLoginModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+              <div className={`${settings.darkMode ? "bg-gray-800" : "bg-white"} rounded-xl p-8 w-full max-w-md shadow-2xl transform transition-all duration-300 animate-slideInRight`}>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className={`text-2xl font-bold ${settings.darkMode ? "text-white" : "text-gray-800"}`}>
+                    Welcome Back!
+                  </h2>
+                  <button
+                    onClick={() => setShowLoginModal(false)}
+                    className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${settings.darkMode ? "text-gray-400 hover:text-white" : "text-gray-500"}`}
+                  >
+                    <i className="fas fa-times text-xl"></i>
+                  </button>
+                </div>
+                <form onSubmit={handleLogin} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className={`block text-sm font-medium ${settings.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Enter your email"
+                      value={loginForm.email}
+                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                      className={`w-full p-3 rounded-lg border transition-colors ${
+                        settings.darkMode 
+                          ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#4A90E2]" 
+                          : "bg-white border-gray-300 focus:border-[#4A90E2]"
+                      }`}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className={`block text-sm font-medium ${settings.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        placeholder="Enter your password"
+                        value={loginForm.password}
+                        onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                        className={`w-full p-3 rounded-lg border transition-colors ${
+                          settings.darkMode 
+                            ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#4A90E2]" 
+                            : "bg-white border-gray-300 focus:border-[#4A90E2]"
+                        }`}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-100 transition-colors ${
+                          settings.darkMode ? "text-gray-400 hover:text-white" : "text-gray-500"
+                        }`}
+                      >
+                        <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-[#4A90E2] text-white py-3 rounded-lg font-medium hover:bg-[#357ABD] transition-colors transform hover:scale-[1.02]"
+                  >
+                    Login
+                  </button>
+                  <div className="text-center">
+                    <p className={`text-sm ${settings.darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      Don't have an account?{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowLoginModal(false);
+                          setShowRegisterModal(true);
+                        }}
+                        className="text-[#4A90E2] hover:underline font-medium"
+                      >
+                        Register here
+                      </button>
+                    </p>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {showRegisterModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+              <div className={`${settings.darkMode ? "bg-gray-800" : "bg-white"} rounded-xl p-8 w-full max-w-md shadow-2xl transform transition-all duration-300 animate-slideInRight`}>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className={`text-2xl font-bold ${settings.darkMode ? "text-white" : "text-gray-800"}`}>
+                    Create Account
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setShowRegisterModal(false);
+                      setError(null);
+                    }}
+                    className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${settings.darkMode ? "text-gray-400 hover:text-white" : "text-gray-500"}`}
+                  >
+                    <i className="fas fa-times text-xl"></i>
+                  </button>
+                </div>
+                <form onSubmit={handleRegister} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className={`block text-sm font-medium ${settings.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Enter your email"
+                      value={registerForm.email}
+                      onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                      className={`w-full p-3 rounded-lg border transition-colors ${
+                        settings.darkMode 
+                          ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#4A90E2]" 
+                          : "bg-white border-gray-300 focus:border-[#4A90E2]"
+                      }`}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className={`block text-sm font-medium ${settings.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        placeholder="Create a password"
+                        value={registerForm.password}
+                        onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                        className={`w-full p-3 rounded-lg border transition-colors ${
+                          settings.darkMode 
+                            ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#4A90E2]" 
+                            : "bg-white border-gray-300 focus:border-[#4A90E2]"
+                        }`}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-100 transition-colors ${
+                          settings.darkMode ? "text-gray-400 hover:text-white" : "text-gray-500"
+                        }`}
+                      >
+                        <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className={`block text-sm font-medium ${settings.darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                      Confirm Password
+                    </label>
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      placeholder="Confirm your password"
+                      value={registerForm.confirmPassword}
+                      onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
+                      className={`w-full p-3 rounded-lg border transition-colors ${
+                        settings.darkMode 
+                          ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#4A90E2]" 
+                          : "bg-white border-gray-300 focus:border-[#4A90E2]"
+                      }`}
+                      required
+                    />
+                  </div>
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg animate-shake">
+                      <p className="text-sm">{error}</p>
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    className="w-full bg-[#4A90E2] text-white py-3 rounded-lg font-medium hover:bg-[#357ABD] transition-colors transform hover:scale-[1.02]"
+                  >
+                    Create Account
+                  </button>
+                  <div className="text-center">
+                    <p className={`text-sm ${settings.darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      Already have an account?{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowRegisterModal(false);
+                          setShowLoginModal(true);
+                        }}
+                        className="text-[#4A90E2] hover:underline font-medium"
+                      >
+                        Login here
+                      </button>
+                    </p>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {showPlansModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+              <div className={`${settings.darkMode ? "bg-gray-800" : "bg-white"} rounded-lg p-6 w-full max-w-md`}>
+                <h2 className={`text-xl font-bold mb-4 ${settings.darkMode ? "text-white" : "text-gray-800"}`}>
+                  Choose Your Plan
+                </h2>
+                <div className="space-y-4">
+                  <div className="w-full p-4 border rounded-lg">
+                    <h3 className="font-bold">Free Plan</h3>
+                    <p className="text-sm text-gray-500">Basic features with 30-day premium trial</p>
+                    <ul className="mt-2 space-y-1 text-sm text-gray-600">
+                      <li>• Up to 30 items</li>
+                      <li>• Basic inventory management</li>
+                      <li>• Manual item entry</li>
+                      <li>• 30 free barcode scans</li>
+                      <li className="text-green-600 font-medium">• 30-day premium trial included!</li>
+                    </ul>
+                    <button
+                      onClick={() => handleSelectPlan("free")}
+                      className="mt-4 w-full py-2 border rounded hover:bg-gray-50"
+                    >
+                      Start Free Plan with Trial
+                    </button>
+                  </div>
+                  <div className="w-full p-4 bg-[#4A90E2] text-white rounded-lg">
+                    <h3 className="font-bold">Premium Plan</h3>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <p className="text-sm">AED 6.99/month</p>
+                      <span className="text-xs bg-white/20 px-2 py-1 rounded">or</span>
+                      <p className="text-sm">AED 79.99/year</p>
+                    </div>
+                    <ul className="mt-2 space-y-1 text-sm">
+                      <li>• Unlimited items</li>
+                      <li>• Smart home integration</li>
+                      <li>• Unlimited barcode scanning</li>
+                      <li>• Family sharing</li>
+                      <li>• Premium support</li>
+                    </ul>
+                    <div className="mt-4 space-y-2">
+                      <button
+                        onClick={() => handleSelectPlan("premium")}
+                        className="w-full py-2 bg-white text-[#4A90E2] rounded hover:bg-gray-50"
+                      >
+                        Get Premium Monthly
+                      </button>
+                      <button
+                        onClick={() => handleSelectPlan("premium-yearly")}
+                        className="w-full py-2 bg-white/20 text-white rounded hover:bg-white/30"
+                      >
+                        Get Premium Yearly (Save 5%)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPlansModal(false)}
                   className="absolute top-2 right-2 text-gray-500"
                 >
                   <i className="fas fa-times"></i>
