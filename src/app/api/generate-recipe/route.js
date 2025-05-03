@@ -57,15 +57,22 @@ export async function POST(request) {
 
     // Optimized prompt for faster response
     const prompt = `Create a quick recipe using these ingredients: ${ingredients.join(', ')}. 
-    Format as:
+    Format the recipe EXACTLY as follows:
     1. Recipe Name
-    2. Prep Time (minutes)
-    3. Cook Time (minutes)
-    4. Servings
-    5. Ingredients (with quantities)
-    6. Steps (numbered)
-    7. Tips (bullet points)
-    Keep it concise and practical.`;
+    2. Prep Time: [X minutes]
+    3. Cook Time: [X minutes]
+    4. Servings: [X]
+    5. Ingredients:
+    - [List ingredients with quantities]
+    6. Steps:
+    1. [Step 1]
+    2. [Step 2]
+    ...
+    7. Tips:
+    - [Tip 1]
+    - [Tip 2]
+    ...
+    Keep it concise and practical. Always include prep time, cook time, and servings.`;
 
     console.log('Sending request to OpenRouter.ai...');
 
