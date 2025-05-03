@@ -4,10 +4,10 @@ import OpenAI from 'openai';
 // Initialize OpenAI with OpenRouter.ai configuration
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
-  apiKey: "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",
+  apiKey: process.env.OPENROUTER_API_KEY,
   defaultHeaders: {
-    "HTTP-Referer": "http://localhost:3000", // Your local development URL
-    "X-Title": "Storify Recipe Generator", // Your app name
+    "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    "X-Title": "Storify Recipe Generator",
   },
 });
 
