@@ -109,7 +109,7 @@ function MainComponent() {
         "Cream",
         "Garam Masala",
       ],
-      image: "/images/butter-chicken.jpg",
+      image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500&auto=format&fit=crop&q=60",
     },
     {
       id: 2,
@@ -123,7 +123,7 @@ function MainComponent() {
         "Ghee",
         "Onions",
       ],
-      image: "biryani.jpg",
+      image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&auto=format&fit=crop&q=60",
     },
     {
       id: 3,
@@ -137,7 +137,7 @@ function MainComponent() {
         "Ginger",
         "Garlic",
       ],
-      image: "palak-paneer.jpg",
+      image: "https://images.unsplash.com/photo-1601050591252-0c0a2a0c0a0a?w=500&auto=format&fit=crop&q=60",
     },
     {
       id: 4,
@@ -151,7 +151,7 @@ function MainComponent() {
         "Tomatoes",
         "Spices",
       ],
-      image: "dal-makhani.jpg",
+      image: "https://images.unsplash.com/photo-1601050591252-0c0a2a0c0a0a?w=500&auto=format&fit=crop&q=60",
     },
     {
       id: 5,
@@ -165,7 +165,7 @@ function MainComponent() {
         "Onions",
         "Tomatoes",
       ],
-      image: "tikka-masala.jpg",
+      image: "https://images.unsplash.com/photo-1601050591252-0c0a2a0c0a0a?w=500&auto=format&fit=crop&q=60",
     },
     {
       id: 6,
@@ -179,7 +179,7 @@ function MainComponent() {
         "Turmeric",
         "Cumin",
       ],
-      image: "aloo-gobi.jpg",
+      image: "https://images.unsplash.com/photo-1601050591252-0c0a2a0c0a0a?w=500&auto=format&fit=crop&q=60",
     },
   ]);
   const [settings, setSettings] = useState({
@@ -277,6 +277,11 @@ function MainComponent() {
       date: "2024-03-01"
     }
   ]);
+  const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const [generatedRecipe, setGeneratedRecipe] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [recipeError, setRecipeError] = useState(null);
+
   const getStorageRecommendation = (category, temperature, humidity) => {
     const recommendations = {
       Dairy: {
@@ -678,6 +683,48 @@ function MainComponent() {
     }
   };
 
+  const handleIngredientSelect = (ingredient) => {
+    if (selectedIngredients.includes(ingredient)) {
+      setSelectedIngredients(selectedIngredients.filter(i => i !== ingredient));
+    } else {
+      setSelectedIngredients([...selectedIngredients, ingredient]);
+    }
+  };
+
+  const generateRecipe = async () => {
+    if (selectedIngredients.length === 0) {
+      setRecipeError("Please select at least one ingredient");
+      return;
+    }
+
+    setIsLoading(true);
+    setRecipeError(null);
+
+    try {
+      const response = await fetch('/api/generate-recipe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ingredients: selectedIngredients }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('Recipe generation error:', data);
+        throw new Error(data.details || data.error || 'Failed to generate recipe');
+      }
+
+      setGeneratedRecipe(data.recipe);
+    } catch (err) {
+      console.error('Error in recipe generation:', err);
+      setRecipeError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <link
@@ -738,6 +785,91 @@ function MainComponent() {
         .card-hover:hover {
           transform: translateY(-5px);
           box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideInRight {
+          from { transform: translateX(-20px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out;
+        }
+        .animate-slideInRight {
+          animation: slideInRight 0.5s ease-out;
+        }
+        .animate-bounce {
+          animation: bounce 2s infinite;
+        }
+        .animate-pulse {
+          animation: pulse 2s infinite;
+        }
+        @keyframes recipeAppear {
+          0% { 
+            transform: scale(0.95);
+            opacity: 0;
+          }
+          50% {
+            transform: scale(1.02);
+          }
+          100% { 
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        @keyframes recipeSection {
+          0% {
+            transform: translateX(-30px);
+            opacity: 0;
+          }
+          100% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes recipeItem {
+          0% {
+            transform: translateY(10px);
+            opacity: 0;
+          }
+          100% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        .animate-recipeAppear {
+          animation: recipeAppear 0.5s ease-out;
+        }
+        .animate-recipeSection {
+          animation: recipeSection 0.5s ease-out;
+        }
+        .animate-recipeItem {
+          animation: recipeItem 0.5s ease-out;
+        }
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
       `}</style>
       <div
@@ -1346,55 +1478,206 @@ function MainComponent() {
             )}
 
             {activeTab === "recipes" && (
-              <div className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {recipes.map((recipe) => (
-                    <div
-                      key={recipe.id}
-                      className={`${
-                        settings.darkMode ? "bg-gray-700" : "bg-white"
-                      } rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow duration-200`}
+              <div className="p-4 space-y-6">
+                {/* AI Recipe Generator Section */}
+                <div className={`${settings.darkMode ? "bg-gray-700" : "bg-white"} rounded-xl p-6 shadow-lg`}>
+                  <h2 className={`text-xl font-bold mb-4 ${settings.darkMode ? "text-white" : "text-gray-800"}`}>
+                    <i className="fas fa-robot text-[#6BBF59] mr-2"></i>
+                    AI Recipe Generator
+                  </h2>
+                  
+                  <div className="mb-6">
+                    <h3 className={`font-semibold mb-3 ${settings.darkMode ? "text-white" : "text-gray-800"}`}>
+                      Select Ingredients from Your Pantry
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {products.map((product) => (
+                        <button
+                          key={product.id}
+                          onClick={() => handleIngredientSelect(product.name)}
+                          className={`p-3 rounded-lg border ${
+                            selectedIngredients.includes(product.name)
+                              ? 'bg-[#6BBF59]/20 border-[#6BBF59]'
+                              : settings.darkMode 
+                                ? 'bg-gray-800 border-gray-600'
+                                : 'bg-gray-50 border-gray-200'
+                          } hover:bg-[#6BBF59]/10 transition-colors`}
+                        >
+                          {product.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="text-center mb-6">
+                    <button
+                      onClick={generateRecipe}
+                      disabled={isLoading || selectedIngredients.length === 0}
+                      className={`px-6 py-3 rounded-lg text-white font-semibold relative overflow-hidden ${
+                        isLoading || selectedIngredients.length === 0
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-[#6BBF59] hover:bg-[#5AA548]'
+                      }`}
                     >
-                      <img
-                        src={recipe.image}
-                        alt={`${recipe.name} presentation`}
-                        className="w-full h-40 object-cover"
-                      />
-                      <div className="p-4">
-                        <h3
-                          className={`font-semibold text-lg ${
-                            settings.darkMode ? "text-white" : "text-gray-800"
+                      {isLoading ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin mr-2">
+                            <i className="fas fa-utensils"></i>
+                          </div>
+                          <span>Generating Recipe...</span>
+                        </div>
+                      ) : (
+                        'Generate Recipe'
+                      )}
+                    </button>
+                  </div>
+
+                  {recipeError && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 animate-shake">
+                      {recipeError}
+                    </div>
+                  )}
+
+                  {generatedRecipe && (
+                    <div className={`${settings.darkMode ? "bg-gray-800" : "bg-white"} rounded-lg p-6 shadow-lg animate-recipeAppear`}>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className={`text-2xl font-bold ${settings.darkMode ? "text-white" : "text-gray-800"} animate-slideInRight`}>
+                          <i className="fas fa-utensils text-[#6BBF59] mr-2 animate-bounce"></i>
+                          Generated Recipe
+                        </h3>
+                        <button 
+                          onClick={() => setGeneratedRecipe(null)}
+                          className={`p-2 rounded-full hover:scale-110 transition-transform ${settings.darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+                        >
+                          <i className="fas fa-times"></i>
+                        </button>
+                      </div>
+                      
+                      <div className="prose max-w-none">
+                        {generatedRecipe.split('\n').map((line, index) => {
+                          // Check if line is a section header (starts with a number and dot)
+                          if (/^\d+\./.test(line)) {
+                            return (
+                              <div key={index} className="animate-recipeSection" style={{ animationDelay: `${index * 150}ms` }}>
+                                <h4 className={`text-xl font-semibold mt-6 mb-3 ${settings.darkMode ? "text-white" : "text-gray-800"} flex items-center`}>
+                                  <span className="w-8 h-8 rounded-full bg-[#6BBF59] text-white flex items-center justify-center mr-3 animate-pulse">
+                                    {line.split('.')[0]}
+                                  </span>
+                                  {line.split('.').slice(1).join('.').trim()}
+                                </h4>
+                              </div>
+                            );
+                          }
+                          // Check if line is a list item
+                          else if (line.trim().startsWith('•')) {
+                            return (
+                              <div key={index} className={`flex items-start space-x-2 mb-2 ${settings.darkMode ? "text-gray-300" : "text-gray-700"} animate-recipeItem`} style={{ animationDelay: `${index * 150}ms` }}>
+                                <span className="text-[#6BBF59] mt-1 animate-pulse">•</span>
+                                <span>{line.replace('•', '').trim()}</span>
+                              </div>
+                            );
+                          }
+                          // Regular paragraph
+                          else if (line.trim()) {
+                            return (
+                              <p key={index} className={`mb-3 ${settings.darkMode ? "text-gray-300" : "text-gray-700"} animate-recipeItem`} style={{ animationDelay: `${index * 150}ms` }}>
+                                {line}
+                              </p>
+                            );
+                          }
+                          // Empty line
+                          return <div key={index} className="h-2"></div>;
+                        })}
+                      </div>
+
+                      <div className="mt-6 flex justify-end space-x-3 animate-fadeIn" style={{ animationDelay: '800ms' }}>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(generatedRecipe);
+                            // You could add a toast notification here
+                          }}
+                          className={`px-4 py-2 rounded-lg flex items-center space-x-2 hover:scale-105 transition-transform ${
+                            settings.darkMode 
+                              ? "bg-gray-700 hover:bg-gray-600 text-white" 
+                              : "bg-gray-100 hover:bg-gray-200 text-gray-800"
                           }`}
                         >
-                          {recipe.name}
-                        </h3>
-                        <p
-                          className={`text-sm ${
-                            settings.darkMode
-                              ? "text-gray-400"
-                              : "text-gray-500"
-                          } mb-2`}
+                          <i className="fas fa-copy"></i>
+                          <span>Copy Recipe</span>
+                        </button>
+                        <button 
+                          onClick={() => {
+                            // You could add a save to favorites feature here
+                          }}
+                          className={`px-4 py-2 rounded-lg flex items-center space-x-2 hover:scale-105 transition-transform ${
+                            settings.darkMode 
+                              ? "bg-[#6BBF59] hover:bg-[#5AA548] text-white" 
+                              : "bg-[#6BBF59] hover:bg-[#5AA548] text-white"
+                          }`}
                         >
-                          <i className="fas fa-clock mr-1"></i>
-                          {recipe.time}
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {recipe.ingredients.map((ingredient, i) => (
-                            <span
-                              key={i}
-                              className={`text-xs px-2 py-1 rounded ${
-                                settings.darkMode
-                                  ? "bg-gray-600 text-gray-300"
-                                  : "bg-gray-100 text-gray-700"
-                              }`}
-                            >
-                              {ingredient}
-                            </span>
-                          ))}
-                        </div>
+                          <i className="fas fa-heart"></i>
+                          <span>Save to Favorites</span>
+                        </button>
                       </div>
                     </div>
-                  ))}
+                  )}
+                </div>
+
+                {/* Existing Recipes Section */}
+                <div className={`${settings.darkMode ? "bg-gray-700" : "bg-white"} rounded-xl p-6 shadow-lg`}>
+                  <h2 className={`text-xl font-bold mb-4 ${settings.darkMode ? "text-white" : "text-gray-800"}`}>
+                    <i className="fas fa-utensils text-[#6BBF59] mr-2"></i>
+                    Saved Recipes
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {recipes.map((recipe) => (
+                      <div
+                        key={recipe.id}
+                        className={`${
+                          settings.darkMode ? "bg-gray-800" : "bg-white"
+                        } rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow duration-200`}
+                      >
+                        <img
+                          src={recipe.image}
+                          alt={`${recipe.name} presentation`}
+                          className="w-full h-40 object-cover"
+                        />
+                        <div className="p-4">
+                          <h3
+                            className={`font-semibold text-lg ${
+                              settings.darkMode ? "text-white" : "text-gray-800"
+                            }`}
+                          >
+                            {recipe.name}
+                          </h3>
+                          <p
+                            className={`text-sm ${
+                              settings.darkMode
+                                ? "text-gray-400"
+                                : "text-gray-500"
+                            } mb-2`}
+                          >
+                            <i className="fas fa-clock mr-1"></i>
+                            {recipe.time}
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {recipe.ingredients.map((ingredient, i) => (
+                              <span
+                                key={i}
+                                className={`text-xs px-2 py-1 rounded ${
+                                  settings.darkMode
+                                    ? "bg-gray-600 text-gray-300"
+                                    : "bg-gray-100 text-gray-700"
+                                }`}
+                              >
+                                {ingredient}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
