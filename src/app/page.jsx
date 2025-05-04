@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 import { useUpload } from "../utilities/runtime-helpers";
 
@@ -18,6 +18,21 @@ function ConfettiBurst({ trigger }) {
     }
   }, [trigger]);
   return null;
+}
+
+// Notification component
+function Notification({ message, type, onClose }) {
+  return (
+    <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center space-x-3 ${
+      type === 'warning' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+    }`}>
+      <i className={`fas ${type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}`}></i>
+      <p>{message}</p>
+      <button onClick={onClose} className="ml-2 hover:opacity-70">
+        <i className="fas fa-times"></i>
+      </button>
+    </div>
+  );
 }
 
 function MainComponent() {
@@ -884,6 +899,42 @@ function MainComponent() {
     triggerConfetti();
   };
 
+  const [notifications, setNotifications] = useState([]);
+  const [expiringItemsCount, setExpiringItemsCount] = useState(0);
+
+  // Check for expiring items and show notifications
+  useEffect(() => {
+    const checkExpiringItems = () => {
+      const expiringItems = products.filter(product => {
+        const daysUntilExpiry = calculateDaysUntilExpiry(product.expiry);
+        return daysUntilExpiry <= 3 && daysUntilExpiry > 0;
+      });
+
+      setExpiringItemsCount(expiringItems.length);
+
+      if (expiringItems.length > 0) {
+        const notification = {
+          id: Date.now(),
+          type: 'warning',
+          message: `${expiringItems.length} item${expiringItems.length > 1 ? 's' : ''} expiring within 3 days!`,
+          items: expiringItems.map(item => ({
+            name: item.name,
+            daysLeft: calculateDaysUntilExpiry(item.expiry)
+          }))
+        };
+        setNotifications(prev => [...prev, notification]);
+      }
+    };
+
+    // Check immediately when component mounts
+    checkExpiringItems();
+
+    // Check every hour
+    const interval = setInterval(checkExpiringItems, 3600000);
+
+    return () => clearInterval(interval);
+  }, [products]);
+
   return (
     <>
       <link
@@ -1106,9 +1157,19 @@ function MainComponent() {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <button className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110">
-                  <i className="fas fa-bell"></i>
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={() => setNotifications([])} 
+                    className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110"
+                  >
+                    <i className="fas fa-bell"></i>
+                    {expiringItemsCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
+                        {expiringItemsCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-300 hover:scale-105"
@@ -1118,6 +1179,39 @@ function MainComponent() {
               </div>
             )}
           </header>
+
+          {/* Notifications */}
+          {notifications.map(notification => (
+            <div 
+              key={notification.id}
+              className={`fixed top-20 right-4 max-w-sm bg-white rounded-lg shadow-lg p-4 transform transition-all duration-500 animate-slideInRight z-50 ${
+                settings.darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+              }`}
+            >
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <i className="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">{notification.message}</p>
+                  <div className="mt-2 space-y-1">
+                    {notification.items.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <span>{item.name}</span>
+                        <span className="text-red-500">{item.daysLeft} days left</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))}
+                  className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          ))}
 
           <div className="flex-1 overflow-y-auto">
             {activeTab === "settings" && (
@@ -1422,7 +1516,13 @@ function MainComponent() {
                               </div>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <div className={`w-3 h-3 rounded-full ${getStatusColor(product.status)}`}></div>
+                              <div className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                                calculateDaysUntilExpiry(product.expiry) <= 1
+                                  ? 'bg-red-500 animate-pulse'
+                                  : calculateDaysUntilExpiry(product.expiry) === 2
+                                    ? 'bg-yellow-600'
+                                    : 'bg-yellow-400'
+                              }`}></div>
                               <button
                                 onClick={() => handleDonateItem(product)}
                                 className="text-[#6BBF59] hover:text-[#5AA548]"
