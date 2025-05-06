@@ -87,7 +87,7 @@ function MainComponent() {
     {
       id: 2,
       name: "Bread",
-      expiry: "2025-05-12",
+      expiry: "2025-05-07",
       quantity: 2,
       category: "Pantry",
       status: "near",
@@ -117,7 +117,7 @@ function MainComponent() {
     {
       id: 5,
       name: "Yogurt",
-      expiry: "2025-05-9",
+      expiry: "2025-05-10",
       quantity: 4,
       category: "Dairy",
       status: "near",
@@ -127,7 +127,7 @@ function MainComponent() {
     {
       id: 6,
       name: "Spinach",
-      expiry: "2025-05-8",
+      expiry: "2025-05-11",
       quantity: 1,
       category: "Vegetables",
       status: "near",
@@ -137,7 +137,7 @@ function MainComponent() {
     {
       id: 7,
       name: "Strawberries",
-      expiry: "2025-05-7",
+      expiry: "2025-05-10",
       quantity: 1,
       category: "Fruits",
       status: "near",
@@ -147,7 +147,7 @@ function MainComponent() {
     {
       id: 8,
       name: "Ground Beef",
-      expiry: "2025-05-8",
+      expiry: "2025-05-9",
       quantity: 1,
       category: "Meat",
       status: "near",
@@ -157,7 +157,7 @@ function MainComponent() {
     {
       id: 9,
       name: "Cheese",
-      expiry: "2025-05-20",
+      expiry: "2025-05-7",
       quantity: 2,
       category: "Dairy",
       status: "near",
@@ -167,7 +167,7 @@ function MainComponent() {
     {
       id: 10,
       name: "Tomatoes",
-      expiry: "2025-05-9",
+      expiry: "2025-05-10",
       quantity: 4,
       category: "Vegetables",
       status: "near",
@@ -187,7 +187,7 @@ function MainComponent() {
     {
       id: 12,
       name: "Salmon Fillet",
-      expiry: "2025-05-8",
+      expiry: "2025-05-15",
       quantity: 2,
       category: "Meat",
       status: "near",
@@ -207,7 +207,7 @@ function MainComponent() {
     {
       id: 14,
       name: "Bell Peppers",
-      expiry: "2025-05-9",
+      expiry: "2025-05-11",
       quantity: 3,
       category: "Vegetables",
       status: "near",
